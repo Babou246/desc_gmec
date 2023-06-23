@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Meta -->
+  <meta name="description" content="Responsive Bootstrap 5 Dashboard Template">
+  <meta name="author" content="ThemePixels">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="../static/assets/img/favicon.png">
+
+  <title>DashForge Responsive Bootstrap 5 Dashboard Template</title>
+
+  <!-- vendor css -->
+  <link href="../static/lib/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="../static/lib/ionicons/css/ionicons.min.css" rel="stylesheet">
+  <link href="../static/lib/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- DashForge CSS -->
+  <link rel="stylesheet" href="../static/assets/css/dashforge.css">
+  <link rel="stylesheet" href="../static/assets/css/dashforge.auth.css">
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+  <!-- Include jQuery library -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+  <!-- Include Bootstrap JavaScript -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $("#myform").on("submit", function() {
+      $("#pageloader").fadeIn();
+    }); //submit
+  }); //document ready
+</script>
+<style>
+  #pageloader {
+    background: rgba(148, 46, 46, 0);
+    display: none;
+    height: 20%;
+    position: fixed;
+    width: 20%;
+    z-index: 9999;
+  }
+
+  .btn-orange{
+    background-color: #FF6600;
+  }
+
+  #pageloader img {
+    left: 50%;
+    margin-left: -32px;
+    margin-top: -32px;
+    position: absolute;
+    top: 50%;
+  }
+</style>
+
+<body>
+
+  <div class="content content-fixed content-auth">
+    <div class="container">
+      <div class="media align-items-stretch justify-content-center ht-100p pos-relative">
+        <div class="media-body align-items-center d-none d-lg-flex">
+          <div class="mx-wd-600">
+            <img src="../static/assets/img/Image1.png" class="img-fluid" alt="">
+          </div>
+          <div class="pos-absolute b-0 l-0 tx-12 tx-center">
+            <ion-icon name="logo-stencil"></ion-icon><img src="../static/assets/img/orange_logo.svg" width="20"
+              height="20" />&nbsp; GMEC : Outil de gestion des erreurs <a href="#" target="_blank"> &copy; 2023.</a>
+          </div>
+          <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
+            <div class="wd-100p">
+              <h3 class="tx-color-01 mg-b-5">Authentification</h3>
+              <p class="tx-color-03 tx-16 mg-b-40">Welcome back! Please signin to continue.</p>
+
+              <form action="{{url_for('login')}}" method="post" id="myform">
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div class="alert alert-warning">
+                      {{ messages[0] }}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                <div class="form-group">
+                  <label>Identifiant</label>
+                  <input type="text" name="login" class="form-control" placeholder="username">
+                </div>
+                <div class="form-group">
+                  <div class="d-flex justify-content-between mg-b-5">
+                    <label class="mg-b-0-f">Password</label>
+                  </div>
+                  <input type="text" name="password" class="form-control" placeholder="Enter your password">
+                </div>
+                <button class="btn-orange btn-sm w-100">Connexion</button>
+              </form>
+
+              <!-- Button trigger modal -->
+              <div class="tx-13 mg-t-20 tx-center">
+                Forgot password? <a href="#" data-toggle="modal" data-target="#passwordModal">Mot de passe</a>
+              </div>
+
+              <!-- Modal -->
+              <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="passwordModalLabel">Forgot Password</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Add your form elements here for password recovery -->
+                            <form action="/changepassword" method="post"> 
+                                <div class="form-group">
+                                  <label for="email">Login</label>
+                                  <input type="text" name="login" class="form-control" id="login" placeholder="pseudo...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pwd">Ancien mot de passe</label>
+                                    <input type="text" name="ancien" class="form-control" id="pwd" placeholder="ancien mdp">
+                                </div>
+                                <div class="form-group">
+                                    <label for="s">Nouveau mot de passe</label>
+                                    <input type="text" class="form-control" name="new" id="s" placeholder="nouveau mdp">
+                                </div>
+                                <div class="form-group">
+                                  <label for="l">Confirmer mot de passe</label>
+                                  <input type="text" class="form-control" name="conf" id="l" placeholder="conf mdp">
+                              </div>
+                                <!-- Add more form fields as needed -->
+                                <button type="submit" class="btn-orange">Recover Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- sign-wrapper -->
+        </div><!-- media-body -->
+
+      </div><!-- media -->
+    </div><!-- container -->
+  </div><!-- content -->
+
+  <script src="../static/lib/jquery/jquery.min.js"></script>
+  <script src="../static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../static/lib/feather-icons/feather.min.js"></script>
+  <script src="../static/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+
+  <script src="../static/assets/js/dashforge.js"></script>
+
+  <!-- append theme customizer -->
+  <script src="../static/lib/js-cookie/js.cookie.js"></script>
+  <script src="../static/assets/js/dashforge.settings.js"></script>
+  <script>
+    $(function() {
+      'use script'
+      window.darkMode = function() {
+        $('.btn-white').addClass('btn-dark').removeClass('btn-white');
+      }
+      window.lightMode = function() {
+        $('.btn-dark').addClass('btn-white').removeClass('btn-dark');
+      }
+      var hasMode = Cookies.get('df-mode');
+      if (hasMode === 'dark') {
+        darkMode();
+      } else {
+        lightMode();
+      }
+    })
+  </script>
+</body>
+
+</html>

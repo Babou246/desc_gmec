@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="../static/assets/img/favicon.png">
+
+  <title>DashForge Responsive Bootstrap 5 Dashboard Template</title>
+
+  <!-- vendor css -->
+  <link href="../static/lib/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="../static/lib/typicons.font/src/font/typicons.css" rel="stylesheet">
+  <link href="../static/lib/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <link href="../static/lib/prismjs/themes/prism-vs.css" rel="stylesheet">
+  <link href="../static/lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="../static/lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
+  <link href="../static/lib/select2/css/select2.min.css" rel="stylesheet">
+
+  <!-- DashForge CSS -->
+  <link rel="stylesheet" href="../static/assets/css/dashforge.css">
+  <link rel="stylesheet" href="../static/assets/css/dashforge.demo.css">
+
+  {% block css %}{% endblock css %}
+</head>
+
+<body data-bs-spy="scroll" data-bs-target="#navSection" data-offset="120">
+
+  {% extends 'pages/index.html' %}
+
+  {% block content %}
+
+  <div class="container">
+    <ol class="breadcrumb df-breadcrumbs mg-b-10">
+      <li class="breadcrumb-item"><a href="#">Administration</a></li>
+
+      <li class="breadcrumb-item active" aria-current="page">Utilisateurs</li>
+    </ol>
+
+    <h4 id="section2" class="mg-b-10">Gestion des Comptes</h4>
+    <p class="mg-b-30">Responsive is an extension for DataTables that resolves that problem by optimising the table's
+      layout for different screen sizes through the dynamic insertion and removal of columns from the table.</p>
+
+    <div class="df-example demo-table">
+      <table id="example2" class="table">
+        <thead>
+          <tr>
+            <th class="wd-20p  text-white" style="background-color: #343640 ;">Prénoms</th>
+            <th class="wd-25p text-white" style="background-color: #343640 ;">Nom</th>
+            <th class="wd-25p text-white" style="background-color: #343640 ;">sigle_service</th>
+            <th class="wd-25p text-white" style="background-color: #343640 ;">Nom_abrege</th>
+            <th class="wd-20p text-white" style="background-color: #343640 ;">Role</th>
+            <th class="wd-15p text-white" style="background-color: #343640 ;">Service</th>
+            <th class="wd-15p text-white" style="background-color: #343640 ;">Date Debut</th>
+            <th class="wd-15p text-white" style="background-color: #343640 ;">Date Fin</th>
+            <th class="wd-20p text-white" style="background-color: #343640 ;">Matricule</th>
+            <!-- <th class="wd-20p text-white" style="background-color: #343640 ;">Date Fin</th> -->
+            <th class="wd-20p text-white" style="background-color: #343640 ;">statut</th>
+            {% if current_user.role.role == "Chef de département"%}
+            <th class="wd-20p text-white" style="background-color: #343640 ;">Action</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users_pagination.items %}
+          {% if user.date_fin %}
+          <tr>
+            <td style="background-color: red;">{{ user.prenom }}</td>
+            <td style="background-color: red;">{{ user.nom }}</td>
+            <td style="background-color: red;">{{ user.sigle_service }}</td>
+            <td style="background-color: red;">{{ user.nom_abrege }}</td>
+            <td style="background-color: red;">{{ user.role.role }}</td>
+            <td style="background-color: red;">{{ user.service.nom }}</td>
+            <td style="background-color: red;">{{ user.date_debut }}</td>
+            <td style="background-color: red;">{{ user.date_fin }}</td>
+            <td style="background-color: red;">{{ user.matricule }}</td>
+            <!-- <td style="background-color: red;">{{ user.date_fin }}</td> -->
+            <td style="background-color: red;">{{ user.state }}</td>
+            {% if current_user.role.role == "Chef de département"%}
+            <td>
+              <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
+                <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
+                  data-bs-placement="top" title="Modifier">
+                  <i class="ri-edit-line fs-11 lh-1"></i>
+                </button>
+              </a>
+
+              <a href="{{ url_for('delete',user_id=user.id) }}"
+                onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} : ?')"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Supprimer">
+
+                <button type="button" class="btn btn-danger btn-sm"><i
+                    class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          <!-- Modal -->
+          <div class="modal fade" id="info{{ user.id }}" tabindex="-1" aria-labelledby="info{{ user.id }}Label"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="info{{ user.id }}Label">Modifier les informations de {{ user.prenom }}
+                    {{ user.nom }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <form action="/modifier_utilisateur/{{ user.id }}" method="POST">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="alert alert-warning">
+                      {{ messages[0] }}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="row">
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="prenom" class="form-label">Prénom</label>
+                          <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user.prenom }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="nom" class="form-label">Nom</label>
+                          <input type="text" class="form-control" id="nom" name="nom" value="{{ user.nom }}">
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="noms" class="form-label">Sigle</label>
+                          <input type="text" class="form-control" id="noms" name="sigle_service"
+                            value="{{ user.sigle_service }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="role" class="form-label">Rôle</label>
+                          <select class="form-control" value="{{ user.role.role }} id=" role" name="role">
+                            <option value="1" {% if user.role_id == 1 %}selected{% endif %}>Agent</option>
+                            <option value="2" {% if user.role_id == 2 %}selected{% endif %}>Chef de Service</option>
+                            <option value="3" {% if user.role_id == 3 %}selected{% endif %}>Chef de Département</option>
+                            <option value="4" {% if user.role_id == 4 %}selected{% endif %}>Support Qualité</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="service" class="form-label">Service</label>
+                          <select class="form-control" value="{{ user.service.nom }}" id="service" name="service">
+                            <option value="1" {% if user.service_id == 1 %}selected{% endif %}>ISGTR</option>
+                            <option value="2" {% if user.service_id == 2 %}selected{% endif %}>ISCL</option>
+                            <option value="3" {% if user.service_id == 3 %}selected{% endif %}>CDS</option>
+                            <option value="4" {% if user.service_id == 4 %}selected{% endif %}>ISCC</option>
+                            <option value="5" {% if user.service_id == 5 %}selected{% endif %}>ISREC</option>
+                            <option value="6" {% if user.service_id == 6 %}selected{% endif %}>ISFAC</option>
+                            <option value="7" {% if user.service_id == 7 %}selected{% endif %}>ISGRC</option>
+                            <option value="8" {% if user.service_id == 8 %}selected{% endif %}>ISDC</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label for="nom_abrege" class="form-label">nom_abrege</label>
+                          <input type="text" class="form-control" id="nom_abrege" name="nom_abrege"
+                            value="{{ user.sigle_service+'_'+user.prenom }}" disabled>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="matricule" class="form-label">Matricule</label>
+                          <input type="text" class="form-control" id="matricule" name="matricule"
+                            value="{{ user.matricule }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="statut" class="form-label">Statut</label>
+                          <select class="form-control" value="{{ user.state }}" id="statut" name="statut">
+                            <option value="Actif" {% if user.state == 'Actif' %}selected{% endif %}>Actif</option>
+                            <option value="Clocturé" {% if user.state == 'Clocturé' %}selected{% endif %}>Clocturé
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- <div class="col-sm-6"></div>
+                              <div class="col-sm-6"></div> -->
+
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                      </div>
+                    </div>
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <tr>
+            <td>{{ user.prenom }}</td>
+            <td>{{ user.nom }}</td>
+            <td>{{ user.sigle_service }}</td>
+            <td>{{ user.nom_abrege }}</td>
+            <td>{{ user.role.role }}</td>
+            <td>{{ user.service.nom }}</td>
+            <td>{{ user.date_debut }}</td>
+            <td>{{ user.date_fin }}</td>
+            <td>{{ user.matricule }}</td>
+            <td>{{ user.state }}</td>
+            {% if current_user.role.role == "Chef de département"%}
+            <td>
+              <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
+                <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
+                  data-bs-placement="top" title="Modifier">
+                  <i class="ri-edit-line fs-11 lh-1"></i>
+                </button>
+              </a>
+
+              <a href="{{ url_for('delete',user_id=user.id) }}"
+                onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} : ?')"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Supprimer">
+
+                <button type="button" class="btn btn-danger btn-sm"><i
+                    class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          <!-- Modal -->
+          <div class="modal fade" id="info{{ user.id }}" tabindex="-1" aria-labelledby="info{{ user.id }}Label"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="info{{ user.id }}Label">Modifier les informations de {{ user.prenom }}
+                    {{ user.nom }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <form action="/modifier_utilisateur/{{ user.id }}" method="POST">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="alert alert-warning">
+                      {{ messages[0] }}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="row">
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="prenom" class="form-label">Prénom</label>
+                          <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user.prenom }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="nom" class="form-label">Nom</label>
+                          <input type="text" class="form-control" id="nom" name="nom" value="{{ user.nom }}">
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="noms" class="form-label">Sigle</label>
+                          <input type="text" class="form-control" id="noms" name="sigle_service"
+                            value="{{ user.sigle_service }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="role" class="form-label">Rôle</label>
+                          <select class="form-control" value="{{ user.role.role }} id=" role" name="role">
+                            <option value="1" {% if user.role_id == 1 %}selected{% endif %}>Agent</option>
+                            <option value="2" {% if user.role_id == 2 %}selected{% endif %}>Chef de Service</option>
+                            <option value="3" {% if user.role_id == 3 %}selected{% endif %}>Chef de Département</option>
+                            <option value="4" {% if user.role_id == 4 %}selected{% endif %}>Support Qualité</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="service" class="form-label">Service</label>
+                          <select class="form-control" value="{{ user.service.nom }}" id="service" name="service">
+                            <option value="1" {% if user.service_id == 1 %}selected{% endif %}>ISGTR</option>
+                            <option value="2" {% if user.service_id == 2 %}selected{% endif %}>ISCL</option>
+                            <option value="3" {% if user.service_id == 3 %}selected{% endif %}>CDS</option>
+                            <option value="4" {% if user.service_id == 4 %}selected{% endif %}>ISCC</option>
+                            <option value="5" {% if user.service_id == 5 %}selected{% endif %}>ISREC</option>
+                            <option value="6" {% if user.service_id == 6 %}selected{% endif %}>ISFAC</option>
+                            <option value="7" {% if user.service_id == 7 %}selected{% endif %}>ISGRC</option>
+                            <option value="8" {% if user.service_id == 8 %}selected{% endif %}>ISDC</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label for="nom_abrege" class="form-label">nom_abrege</label>
+                          <input type="text" class="form-control" id="nom_abrege" name="nom_abrege"
+                            value="{{ user.sigle_service+'_'+user.prenom }}" disabled>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+
+                        <div class="mb-3">
+                          <label for="matricule" class="form-label">Matricule</label>
+                          <input type="text" class="form-control" id="matricule" name="matricule"
+                            value="{{ user.matricule }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="statut" class="form-label">Statut</label>
+                          <select class="form-control" value="{{ user.state }}" id="statut" name="statut">
+                            <option value="Actif" {% if user.state == 'Actif' %}selected{% endif %}>Actif</option>
+                            <option value="Clocturé" {% if user.state == 'Clocturé' %}selected{% endif %}>Clocturé
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- <div class="col-sm-6"></div>
+                              <div class="col-sm-6"></div> -->
+
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                      </div>
+                    </div>
+                  </form>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Affichage de la pagination -->
+      <!-- Affichage de la pagination avec style Bootstrap -->
+
+    </div><!-- df-example -->
+    <nav aria-label="Pagination">
+      <ul class="pagination justify-content-center">
+        {% for page_num in users_pagination.iter_pages() %}
+        {% if page_num %}
+        {% if users_pagination.page == page_num %}
+        <li class="page-item active" aria-current="page">
+          <span class="page-link">{{ page_num }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('users', page=page_num) }}">{{ page_num }}</a>
+        </li>
+        {% endif %}
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+  </div><!-- container -->
+  {% endblock content %}
+
+</body>
+
+</html>

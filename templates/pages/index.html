@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Meta -->
+  <meta name="description" content="Responsive Bootstrap 5 Dashboard Template">
+  <meta name="author" content="ThemePixels">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="../static/assets/img/favicon.png">
+
+  {% block title %}
+  
+  {% endblock %}
+
+  <!-- vendor css -->
+  <link href="../static/lib/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="../static/lib/ionicons/css/ionicons.min.css" rel="stylesheet">
+  <link href="../static/lib/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <link href="../static/lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="../static/lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
+  <link href="../static/lib/select2/css/select2.min.css" rel="stylesheet">
+  <link href="../static/lassets/css/bootstrap-*.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static',filename='assets/css/style.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <!-- Include jQuery library -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+        // Sélectionnez le bouton
+    var modeToggleBtn = document.getElementById("mode-toggle-btn");
+
+    // Ajoutez un écouteur d'événement pour le clic sur le bouton
+    modeToggleBtn.addEventListener("click", function() {
+      // Basculez la classe 'dark-mode' sur l'élément <body>
+      document.body.classList.toggle("dark-mode");
+    });
+
+  </script>
+  <!-- Include Bootstrap JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <!-- DashForge CSS -->
+  <link rel="stylesheet" href="../static/assets/css/dashforge.css">
+  <link rel="stylesheet" href="../static/assets/css/dashforge.dashboard.css">
+</head>
+
+<body>
+
+  <aside class="aside aside-fixed">
+    <div class="aside-header" style="background-color: #FF7900 ;">
+      <a href="../static/index.html" class="aside-logo text-white">
+        <ion-icon name="logo-capacitor"></ion-icon> Dash<span class="text-dark">Forge</span>
+      </a>
+      <a href="" class="aside-menu-link text-white">
+        <i data-feather="menu"></i>
+        <i data-feather="x"></i>
+      </a>
+    </div>
+    <div class="aside-body">
+      <div class="aside-loggedin">
+        <div class="d-flex align-items-center justify-content-start">
+          <a href="" class="avatar"><img src="../static/assets/img/user.png" class="rounded-circle" alt=""></a>
+          <div class="aside-alert-link">
+            <a href="" class="new" data-bs-toggle="tooltip" title="You have 2 unread messages"><i
+                data-feather="message-square"></i></a>
+            <a href="" class="new" data-bs-toggle="tooltip" title="You have 4 new notifications"><i
+                data-feather="bell"></i></a>
+            <a href="{{ url_for('logout')}}" data-bs-toggle="tooltip" title="Sign out"><i
+                data-feather="log-out"></i></a>
+          </div>
+        </div>
+        <div class="aside-loggedin-user">
+          <a href="#loggedinMenu" class="d-flex align-items-center justify-content-between mg-b-2"
+            data-bs-toggle="collapse">
+            <h6 class="tx-semibold mg-b-0">{{ current_user.prenom }} {{ current_user.nom }}</h6>
+            <i data-feather="chevron-down"></i>
+          </a>
+          {% if current_user.role.role %}
+          <p class="tx-color-03 tx-12 mg-b-0">{{ current_user.role.role }}</p>
+          {% else %}
+          <p class="tx-color-03 tx-12 mg-b-0"></p>
+          {% endif %}
+        </div>
+        <div class="collapse" id="loggedinMenu">
+          <ul class="nav nav-aside mg-b-0">
+            <li class="nav-item"><a href="{{ url_for('monprofil') }}" class="nav-link"><i data-feather="edit"></i>
+                <span>Edit Profile</span></a></li>
+            <li class="nav-item"><a href="{{ url_for('monprofil') }}" class="nav-link"><i data-feather="user"></i> <span>View Profile</span></a>
+            </li>
+            <li class="nav-item"><a href="" class="nav-link"><i data-feather="settings"></i> <span>Account
+                  Settings</span></a></li>
+            <li class="nav-item"><a href="" class="nav-link"><i data-feather="help-circle"></i> <span>Help
+                  Center</span></a></li>
+            <li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i>
+                <span>Sign Out</span></a></li>
+          </ul>
+        </div>
+      </div><!-- aside-loggedin -->
+      <ul class="nav nav-aside">
+        <li class="nav-label">Menu Principal</li>
+        <li class="nav-item actions active"><a href="{{ url_for('home') }}" class="nav-link"><i data-feather="grid"></i>
+            <span>Dashboard</span></a></li>
+        <li class="nav-item with-sub">
+          <a href="" class="nav-link"><i data-feather="file-text"></i> <span>Domaines</span></a>
+          <ul>
+            <li><a href="/chargement-tickets">Easy Vista</a></li>
+            <li><a href="#">Nomad</a></li>
+
+          </ul>
+        </li>
+        <li class="nav-item"><a href="#" class="nav-link"><i data-feather="sliders"></i>
+            <span>Qualification</span></a></li>
+        <li class="nav-item"><a href="/chargement-tickets" class="nav-link"><i data-feather="life-buoy"></i>
+            <span>Erreurs Critiques</span></a></li>
+
+        <li class="nav-item"><a href="/type_defaut" class="nav-link"><i data-feather="paperclip"></i>
+          <span>Type Defaut</span></a></li>
+
+        <li class="nav-item "><a href="#" class="nav-link"><i data-feather="pie-chart"></i>
+            <span>Reporting</span></a></li>
+        <li class="nav-label mg-t-25">Paramétrage</li>
+        <li class="nav-item"><a href="{{ url_for('services')}}" class="nav-link"><i data-feather="archive"></i>
+            <span>Services</span></a></li>
+
+        <li class="nav-item"><a href="#" class="nav-link"><i data-feather="layers"></i> <span>Critères</span></a></li>
+        <li class="nav-item"><a href="{{ url_for('parametrage_defauts')}}" class="nav-link"><i data-feather="settings"></i> <span>Défaut parametrages</span></a></li>
+        <li class="nav-item"><a href="{{ url_for('chargement_tickets')}}" class="nav-link"><i data-feather="database"></i> <span>Chargement Tickets</span></a></li>
+
+        <li class="nav-label mg-t-25">Administration</li>
+        <li class="nav-item with-sub show">
+          <a href="" class="nav-link"><i data-feather="users"></i> <span>Utilisateurs</span></a>
+          <ul>
+            <li><a href="{{ url_for('monprofil') }}">View Profile</a></li>
+            <li><a href="{{ url_for('users')}}">Comptes</a></li>
+            <li><a href="{{ url_for('profils')}}">Profils</a></li>
+            <li><a href="page-events.html">Transactions</a></li>
+            {% if current_user.role.role == "Chef de département" %}
+            <li><a href="{{ url_for('get_corbeille') }}">Corbeille</a></li>
+            {% endif %}
+          </ul>
+        </li>
+
+      </ul>
+    </div>
+  </aside>
+
+  <div class="content ht-100v pd-0">
+    <div class="content-header" style="background-color: #343640">
+      <div class="content-search">
+        <i data-feather="search" class="text-white"></i>
+        <input type="search" class="form-control text-white" placeholder="Rechercher...">
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-link text-white"><i data-feather="help-circle"></i></a>
+        <a href="#" class="nav-link text-white"><i data-feather="monitor"></i></a>
+        <a href="#" class="nav-link text-white"><i data-feather="align-left"></i></a>
+      </nav>
+    </div><!-- content-header -->
+
+    <div class="content-body">
+      <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
+        <div class="d-sm-flex align-items-center justify-content-between mg-b-20 mg-lg-b-30">
+          <div>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb breadcrumb-style1 mg-b-10">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">GMEC</li>
+              </ol>
+            </nav>
+            <h4 class="mg-b-0 tx-spacing--1">Welcome to Dashboard</h4>
+          </div>
+          <div class="d-none d-md-block">
+            <button type="button" class="btn btn-sm pd-x-15 btn-white btn-uppercase" data-toggle="modal"
+              data-target="#importModal">
+              <i data-feather="share" class="wd-10 mg-r-5"></i> Importer
+            </button>
+            <button class="btn btn-sm pd-x-15 btn-white btn-uppercase mg-l-5"><i data-feather="share-2"
+                class="wd-10 mg-r-5"></i> Share</button>
+            <!-- Bouton "Add User" -->
+            {% if current_user.role.role == "Chef de département" %}
+            <button type="button" class="btn btn-sm pd-x-15 btn-primary btn-uppercase mg-l-5" data-toggle="modal"
+              data-target="#addUserModal">
+              <i data-feather="user-plus" class="wd-10 mg-r-5"></i> Add User
+
+            </button>
+            {% endif %}
+
+            <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Importer un fichier</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <form action="/chargement-defauts" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label for="file">Sélectionner un fichier :</label>
+                        <input type="file" class="form-control-file" id="file" name="file">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Importer</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- <a href="#" data-toggle="modal" data-target="#addUserModal">parametrage_defauts</a>
+              <a href="#" data-toggle="modal" data-target="#addUserModal">chargement_defauts</a> -->
+
+            <!-- Modal for adding a user -->
+            <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <!-- User registration form -->
+                    <form class="form" method="POST" action="{{ url_for('resolution_utilisateurs') }}">
+                      <!-- Form fields -->
+                      <div class="row">
+                        <div class="col-sm-6">
+                          <div class="form-group">
+                            <label for="matricule">Matricule:</label>
+                            <input class="form-control" type="text" name="matricule" required>
+                          </div>
+
+                          <div class="form-group">
+                            <label for="login">Login Windows:</label>
+                            <input class="form-control" type="text" name="login" required>
+                          </div>
+
+                        </div>
+                        <div class="col-sm-6">
+
+                          <div class="form-group">
+                            <label for="prenom">Prénom:</label>
+                            <input class="form-control" type="text" name="prenom" required>
+                          </div>
+
+                          <div class="form-group">
+                            <label for="nom">Nom:</label>
+                            <input class="form-control" type="text" name="nom" required>
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+
+                          <div class="form-group">
+                            <label for="roleid">Rôle:</label>
+                            <select class="form-control" name="roleid" required>
+                              <option value="1">Agent</option>
+                              <option value="2">Chef de service</option>
+                              <option value="3">Chef de département</option>
+                              <option value="4">Support Qualité</option>
+                            </select>
+                          </div>
+
+                          <div class="form-group">
+                            <label for="sigle_service">Sigle Service:</label>
+                            <input class="form-control" type="text" name="sigle_service" required>
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="form-group">
+                            <label for="service_id">Service:</label>
+                            <select class="form-control" name="service_id" required>
+                              <option value="1">ISGTR</option>
+                              <option value="2">ISCL</option>
+                              <option value="3">CDS</option>
+                              <option value="4">ISCC</option>
+                              <option value="5">ISREC</option>
+                              <option value="6">ISFAC</option>
+                              <option value="7">ISGRC</option>
+                              <option value="8">ISDC</option>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label for="statut">Statut</label>
+                            <select class="form-control" name="statut" required>
+                              <option value="Actif">Actif</option>
+                              <option value="Clocturé">Clocturé</option>
+                            </select>
+                          </div>
+
+                        </div>
+                        <div class="col-sm-12">
+
+                          <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input class="form-control" type="email" name="email" required>
+                          </div>
+                        </div>
+                        <div class="container">
+
+                          <input class="btn btn-primary" type="submit" value="Créer Utilisateur">
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!--  -->
+        </div>
+      </div>
+
+      {% block content %}
+
+      {% endblock content %}
+
+    </div><!-- container -->
+  </div>
+
+  </div><!-- content -->
+
+  <script src="../static/lib/jquery/jquery.min.js"></script>
+  <script src="../static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../static/lib/feather-icons/feather.min.js"></script>
+  <script src="../static/lib/ionicons/ionicons/ionicons.esm.js" type="module"></script>
+  <script src="../static/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+  <script src="../static/lib/jquery.flot/jquery.flot.js"></script>
+  <script src="../static/lib/jquery.flot/jquery.flot.stack.js"></script>
+  <script src="../static/lib/jquery.flot/jquery.flot.resize.js"></script>
+  <script src="../static/lib/flot.curvedlines/curvedLines.js"></script>
+  <script src="../static/lib/peity/jquery.peity.min.js"></script>
+  <script src="../static/lib/chart.js/Chart.bundle.min.js"></script>
+
+  <script src="../static/assets/js/dashforge.js"></script>
+  <script src="../static/assets/js/dashforge.aside.js"></script>
+  <script src="../static/assets/js/dashforge.sampledata.js"></script>
+  <script src="../static/assets/js/dashboard-four.js"></script>
+
+  <!-- append theme customizer -->
+  <script src="../static/lib/js-cookie/js.cookie.js"></script>
+  <script src="../static/assets/js/dashforge.settings.js"></script>
+  <!-- append theme customizer -->
+
+  <script src="../static/lib/prismjs/prism.js"></script>
+  <script src="../static/lib/datatables.net/js/jquery.dataTables.min.js"></script>
+  <script src="../static/lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
+  <script src="../static/lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+  <script src="../static/lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+  <script src="../static/lib/select2/js/select2.min.js"></script>
+  <script src="../static/lib/jquery/jquery.min.js"></script>
+  <script src="../static/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../static/lib/feather-icons/feather.min.js"></script>
+  <script src="../static/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+
+  <script src="../static/assets/js/dashforge.js"></script>
+  <script src="../static/assets/js/bootstrap.*.js"></script>
+  <script src="../static/assets/js/dashforge.aside.js"></script>
+
+  <!-- append theme customizer -->
+
+  <script>
+    $(function() {
+      'use strict'
+      $('#example2').DataTable({
+        responsive: true,
+        language: {
+          searchPlaceholder: 'Rechercher...',
+          sSearch: '',
+          lengthMenu: '_MENU_ items/page',
+        }
+      });
+      // Select2
+      $('.dataTables_length select').select2({
+        minimumResultsForSearch: Infinity
+      });
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+{% extends "pages/index.html" %}
+
+<head>
+    <title>Résolution des Utilisateurs</title>
+</head>
+
+<body>
+    {% block content %}
+
+    <div class="container">
+        <a href=""> parametrage_defauts</a>
+        <a href="">chargement_defauts</a>
+        <h1>Résolution des Utilisateurs</h1>
+
+        <form class="form" method="POST" action="{{ url_for('resolution_utilisateurs') }}">
+            <div class="form-group">
+                <label for="matricule">Matricule:</label>
+                <input class="form-control" type="text" name="matricule" required>
+            </div>
+
+            <div class="form-group">
+                <label for="login">Login Windows:</label>
+                <input class="form-control" type="text" name="login" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prenom">Prénom:</label>
+                <input class="form-control" type="text" name="prenom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="nom">Nom:</label>
+                <input class="form-control" type="text" name="nom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="roleid">Rôle:</label>
+                <select class="form-control" name="roleid" required>
+                    <option value="1">Agent</option>
+                    <option value="2">Chef de service</option>
+                    <option value="3">Support Qualité</option>
+                    <option value="4">Chef de département</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sigle_service">Sigle Service:</label>
+                <input class="form-control" type="text" name="sigle_service" required>
+            </div>
+
+            <div class="form-group">
+                <label for="service_id">Service:</label>
+                <select class="form-control" name="service_id" required>
+                    <option value="1">Service1</option>
+                    <option value="2">Service2</option>
+                    <option value="3">Service3</option>
+                    <!-- Ajoutez ici d'autres options de service -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input class="form-control" type="email" name="email" required>
+            </div>
+
+            <!-- <div class="form-group">
+            <label for="password">Mot de passe:</label>
+            <input class="form-control" type="password" name="password" required>
+        </div> -->
+
+            <input class="btn btn-primary" type="submit" value="Créer Utilisateur">
+        </form>
+    </div>
+
+    {% endblock content %}
+</body>
+
+</html>

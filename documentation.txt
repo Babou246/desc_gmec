@@ -1,0 +1,16 @@
+
+## Generer l'activativation ou non des clefs
+set foreign_key_checks=0;
+set foreign_key_checks=1;
+
+
+## Migration de la base de données
+flask dn init
+flask db migrate -m "message"
+flask db upgrade
+
+## Migration selon la version "a2bc510e80ba"
+flask db upgrade a2bc510e80ba
+
+## la base de données
+mysqldump -u babou -p desc_users > backup.sql

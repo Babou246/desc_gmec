@@ -1,0 +1,60 @@
+{% extends "pages/index.html" %}
+
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>Les Types de défauts</h1>
+          <!-- DEBUT -->
+
+
+          <table class="table" id="defautTable">
+            <caption>Informations participants</caption>
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Description</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for defaut in defaut %}
+              <tr>
+                <td>{{ defaut.id }}</td>
+                <td>{{ defaut.description_defaut }}</td>
+                <td>{{ defaut.type_defaut }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          
+          <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+          <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+          
+          <script>
+            $(document).ready(function() {
+              $('#defautTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "columnDefs": [{
+                  "targets": [2],
+                  "searchable": true
+                }]
+              });
+            });
+          </script>
+          
+          
+  
+  
+
+          <!-- FIN -->
+          
+    </div>
+{% endblock %}
