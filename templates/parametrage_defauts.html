@@ -79,14 +79,14 @@
 
         <table class="table table-striped mb-0 table-grid" id="tableGrid3">
             <tr>
-                <th>Code</th>
+                <!-- <th>Code</th> -->
                 <th>Type de défaut</th>
                 <th>Description du défaut</th>
                 <th>Date Début</th>
                 <th>Date Fin</th>
                 <th>Concerné</th>
                 <th>Commentaires</th>
-                {% if current_user.role.role == "Chef de Service" %}
+                {% if current_user.role.role == "Chef de Service" or current_user.role.role == "Chef de département" %}
                 <th>Commentaires <span style="color: red;">(A confirmer par N+1)</span></th>
                 {% else %}
                 <th>Commentaires_evaluer</th>
@@ -102,7 +102,7 @@
             {% if defaut.user_id == current_user.email %}
 
             <tr>
-                <td>{{ defaut.code }}</td>
+                <!-- <td>{{ defaut.code }}</td> -->
                 <td>{{ defaut.type_defaut }}</td>
                 <td>{{ defaut.description_defaut }}</td>
                 <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
@@ -111,11 +111,16 @@
                 <td>{{ defaut.commentaires }}</td>
                 <td>{{ defaut.commentaires_evaluer }}</td>
                 <td>{{ defaut.service }}</td>
-
                 <td>{{ defaut.validation }}</td>
-                <td>
+                {% if defaut.confirm == "OUI" %}
+                    <td>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}" style="background-color: #f1f1f1;color: #999999;pointer-events: none;">Modifier</a>
+                    </td>
+                {% else %}
+                    <td>
                     <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}">Modifier</a>
-                </td>
+                    </td>
+                {% endif %}
                 
  
                 <!-- FFFFFFFFFFFFFFFFFFFFFFFFF -->
@@ -201,7 +206,7 @@
             {%  elif current_user.role.id == 2 %}
                 {% if defaut.service==current_user.service.nom  %}
                     <tr>
-                        <td>{{ defaut.code }}</td>
+                        <!-- <td>{{ defaut.code }}</td> -->
                         <td>{{ defaut.type_defaut }}</td>
                         <td>{{ defaut.description_defaut }}</td>
                         <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
@@ -211,7 +216,7 @@
                         <td>{{ defaut.commentaires }}</td>
                         <td>
                             {% if defaut.confirm == "OUI" %}
-                                <a href="#" data-toggle="modal" style="color: aqua;" data-target="#confirmationModal">
+                                <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal">
                                     <strong>{{ defaut.commentaires_n1 }}</strong>
                                 </a>
                                 {% else %}
@@ -296,7 +301,7 @@
                 {% else %}
                     <tr style="display: none;">
                         
-                        <td>{{ defaut.code }}</td>
+                        <!-- <td>{{ defaut.code }}</td> -->
                         <td>{{ defaut.type_defaut }}</td>
                         <td>{{ defaut.description_defaut }}</td>
                         <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
@@ -347,18 +352,30 @@
                 {% endif %}
             {% elif current_user.role.role == "Chef de département" %}
             <tr>
-                <td>{{ defaut.code }}</td>
+                <!-- <td>{{ defaut.code }}</td> -->
                 <td>{{ defaut.type_defaut }}</td>
                 <td>{{ defaut.description_defaut }}</td>
                 <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
                 <td>{{ defaut.date_fin.strftime('%d/%m/%Y') if defaut.date_fin else '' }}</td>
                 <td>{{ defaut.user_id }}</td>
                 <td>{{ defaut.commentaires }}</td>
+
+                <td>
+                    {% if defaut.confirm == "OUI" %}
+                        <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal">
+                            <strong>{{ defaut.commentaires_n1 }}</strong>
+                        </a>
+                        {% else %}
+                        <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal">
+                            {{ defaut.commentaires_n1 }}
+                        </a>
+                        {% endif %}
+                </td>
                 <td>{{ defaut.commentaires_evaluer }}</td>
                 <td>{{ defaut.service }}</td>
                 <td>{{ defaut.validation }}</td>
                 {% if current_user.role.role == "Chef de Service" %}
-                    <td hidden>
+                    <td>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}">Modifier</a>
                     </td>
                 {% endif %}
