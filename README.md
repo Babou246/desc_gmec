@@ -18,16 +18,16 @@ with app.app_context(): '<br>'
 ## Mettre à jour les tables
 
 ### Generer l'activativation ou non des clefs
-set foreign_key_checks=0; '<br>'
-set foreign_key_checks=1; '<br>'
+set foreign_key_checks=0; <br>
+set foreign_key_checks=1; <br>
 
 
 ## Migration de la base de données
 flask dn init
 
 ## Si le dossier migrations est présent inutile de faire *flask* *init*
-flask db migrate -m "message" '<br>'
-flask db upgrade '<br'
+flask db migrate -m "message" <br>
+flask db upgrade <br>
 
 ### Migration selon la version "a2bc510e80ba" si neccessaire
 flask db upgrade a2bc510e80ba
