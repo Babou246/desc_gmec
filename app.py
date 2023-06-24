@@ -1,6 +1,6 @@
 import random
 import string
-from datetime import datetime, date
+from datetime import datetime, date,timedelta
 # import date
 import os
 # from flask_sqlalchemy import SQLAlchemy
@@ -69,6 +69,67 @@ with app.app_context():
                                                     #                     Utilitaire                       #
                                                     ######################################################## 
 
+def send_daily_reminder_email():
+    # Calculate the date for the previous day
+    previous_day = datetime.now() - timedelta(days=1)
+    previous_day = previous_day.date()
+
+    # Query the tickets that are pending and have a resolution date before the previous day
+    pending_tickets = Ticket.query.filter(Ticket.statut_demande == 'Clocturé',
+                                          Ticket.date_resolution_max < previous_day).all()
+
+    # Group the tickets by agent
+    tickets_by_agent = {}
+    for ticket in pending_tickets:
+        if ticket.evaluateur in tickets_by_agent:
+            tickets_by_agent[ticket.evaluateur].append(ticket)
+        else:
+            tickets_by_agent[ticket.evaluateur] = [ticket]
+
+    # Send the reminder email to each agent with pending tasks
+    for agent, tickets in tickets_by_agent.items():
+
+        # Get agent information
+        agent_info = User.query.filter(User.nom_abrege == agent).first()
+        if agent_info:
+            recipient = agent_info.email
+            nom_abrege_agent = agent_info.nom_abrege
+            login = agent_info.login
+            nom = agent_info.nom
+
+            subject = 'Rappel : Tâches en attente dans QUALITE'
+            body = f"Bonjour {nom} {nom_abrege_agent}," \
+                   f"\nVous avez des tâches en attente de traitement dans QUALITE. Merci de les prendre en charge." \
+                   f"\n\nVoici la liste des tâches en attente :"
+
+            for ticket in tickets:
+                body += f"\n\n- Libellé de la tâche : {ticket.libelle_service}" \
+                        f"\n  Action attendue : {ticket.description}" \
+                        f"\n  Date d'imputation : {ticket.enregistre_le}" \
+                        f"\n  Date du jour : {previous_day}" \
+                        f"\n  Délai écoulé : {previous_day - ticket.enregistre_le}"
+
+            body += "\n\nCordialement,\nL'équipe QUALITE"
+
+            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+            msg.body = body
+            mail.send(msg)
+
+            # Send a copy to the chef de service or chef de département
+            if agent_info.role == 'Agent':
+                chef_service = User.query.filter(User.service == agent_info.service, User.role == 'Chef de Service').first()
+                if chef_service:
+                    msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['compte14031970@gmail.com'])
+                    msg_cc.body = body
+                    mail.send(msg_cc)
+
+            elif agent_info.role == 'Chef de Service':
+                chef_departement = User.query.filter(User.departement == agent_info.departement, User.role == 'Chef de département').first()
+                if chef_departement:
+                    msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopb4826@gmail.com'])
+                    msg_cc.body = body
+                    mail.send(msg_cc)
+
 
 def envoi_agent(user_id, confirm):
     if confirm == "OUI":
@@ -108,7 +169,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+##################################################################################################################################
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
@@ -812,6 +873,8 @@ def chargement_tickets():
                                 msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[n_plus_one_recipient])
                                 msg.body = body
                                 mail.send(msg)
+                        
+                    send_daily_reminder_email()
                             
                         # flash("E-mails de rejet envoyés avec succès",'success')
                     # db.session.commit()
