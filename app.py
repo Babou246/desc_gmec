@@ -70,13 +70,31 @@ with app.app_context():
                                                     #                     Utilitaire                       #
                                                     ######################################################## 
 
-@app.route('/m', methods=['GET','POST'])
-def messs():
-    msg= Message('Hello',sender='diopabubakr79@gmail.com',recipients=['diopabubakr79@gmail.com'])
-    msg.body = 'Hello world I am here me Babou DIOP'
-    msg.send(msg)
 
-    return "Envoyé avec success"
+def envoi_agent(user_id, confirm):
+    if confirm == "OUI":
+        subject = 'Confirmation du défaut'
+        body = "Votre N+1 a confirmé le défaut de traitement qui vous a été imputé."
+    else:
+        subject = 'Contestation du défaut'
+        body = "Votre N+1 a contesté le défaut de traitement qui vous a été imputé et l'a soumis à validation."
+
+    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[user_id])
+    msg.body = body
+    mail.send(msg)
+
+
+def envoi_n_plus_one(user_id, confirm):
+    if confirm == "OUI":
+        subject = 'Confirmation du défaut de votre subordonné'
+        body = f"Le défaut de traitement imputé à {user_id} a été confirmé."
+    else:
+        subject = 'Contestation du défaut de votre subordonné'
+        body = f"Le défaut de traitement imputé à {user_id} a été contesté et soumis à validation."
+
+    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopabubakr79@gmail.com'])
+    msg.body = body
+    mail.send(msg)
 
 
 def generate_code():
@@ -513,14 +531,26 @@ def modifier_defaut(defaut_id):
 
         print(">>>>>>>>>>", confirm)
         if confirm:
-            defaut.confirm=confirm
+            defaut.confirm = confirm
             db.session.commit()
-            subject = 'Confirmation de Votre N+1'
-            body = f'Votre N+1 vient de confirmer le defaut de traitement imputé à {defaut.user_id}'
+
+            if confirm == "OUI":
+                subject = 'Confirmation de votre N+1'
+                body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {defaut.user_id}"
+            else:
+                subject = 'Contestation des défauts'
+                body = f"Le défaut de traitement imputé à {defaut.user_id} a été contesté et soumis à votre N+1 pour confirmation."
 
             msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
             msg.body = body
             mail.send(msg)
+
+            # On notifie lagent et son N+1
+            # envoi_agent(defaut.user_id, confirm)
+            envoi_agent('diopb4826@gmail.com', confirm)
+            envoi_n_plus_one(defaut.user_id, confirm)
+
+
         elif request.form.get('description_defaut') or request.form.get('date_fin') or request.form.get('type_defaut') or request.form.get('commentaires') or request.form.get('validation') or request.form.get('evaluer') or request.form.get('n1'):
             defaut.description_defaut = request.form.get('description_defaut')
             defaut.date_fin = request.form.get('date_fin')
