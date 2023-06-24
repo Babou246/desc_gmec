@@ -172,6 +172,9 @@
               </ol>
             </nav>
             <h4 class="mg-b-0 tx-spacing--1">Welcome to Dashboard</h4>
+            <a href="javascript:history.back()" class="btn btn-primary"><i data-feather="arrow-left-circle"
+              class="wd-10 mg-r-5"></i></a>
+              
           </div>
           <div class="d-none d-md-block">
             <button type="button" class="btn btn-sm pd-x-15 btn-white btn-uppercase" data-toggle="modal"
@@ -180,6 +183,7 @@
             </button>
             <button class="btn btn-sm pd-x-15 btn-white btn-uppercase mg-l-5"><i data-feather="share-2"
                 class="wd-10 mg-r-5"></i> Share</button>
+            
             <!-- Bouton "Add User" -->
             {% if current_user.role.role == "Chef de département" %}
             <button type="button" class="btn btn-sm pd-x-15 btn-primary btn-uppercase mg-l-5" data-toggle="modal"

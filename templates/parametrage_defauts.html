@@ -79,7 +79,7 @@
 
         <table class="table table-striped mb-0 table-grid" id="tableGrid3">
             <tr>
-                <!-- <th>Code</th> -->
+                <th>Code</th>
                 <th>Type de défaut</th>
                 <th>Description du défaut</th>
                 <th>Date Début</th>
@@ -102,7 +102,7 @@
             {% if defaut.user_id == current_user.email %}
 
             <tr>
-                <!-- <td>{{ defaut.code }}</td> -->
+                <td>{{ defaut.code }}</td>
                 <td>{{ defaut.type_defaut }}</td>
                 <td>{{ defaut.description_defaut }}</td>
                 <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>

@@ -6,6 +6,9 @@ from flask_login import UserMixin
 from enum import Enum
 from sqlalchemy import Enum as SQLAlchemyEnum
 import random
+from sqlalchemy import event,DDL
+from sqlalchemy.orm import mapper
+from sqlalchemy.orm.attributes import get_history
 
 
 app = Flask(__name__)
