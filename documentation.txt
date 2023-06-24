@@ -28,3 +28,13 @@ BEGIN
         VALUES (NEW.id, OLD.service_id, NEW.service_id, CURRENT_TIMESTAMP);
     END IF;
 END;
+
+CREATE TABLE user_service_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    old_service_id INT NOT NULL,
+    new_service_id INT NOT NULL,
+    transition_date DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user (id),
+    FOREIGN KEY (old_service_id) REFERENCES service (id),
+    FOREIGN KEY (new_service_id) REFERENCES service (id))

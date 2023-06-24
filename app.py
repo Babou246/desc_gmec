@@ -20,6 +20,7 @@ from flask_migrate import Migrate
 from decimal import Decimal
 import openpyxl
 from openpyxl import load_workbook
+from sqlalchemy import desc
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 from openpyxl.styles import Color, Fill
@@ -574,7 +575,7 @@ def parametrage_defauts():
         # Ajouter le nouveau défaut à la base de données blabla
         db.session.add(new_defaut)
         db.session.commit()
-    defauts = TypeDefaut.query.all()
+    defauts = TypeDefaut.query.order_by(desc(TypeDefaut.id)).all()
     elements = TypeDefaut.query.filter(TypeDefaut.service == current_user.service.nom).distinct().order_by(TypeDefaut.date_debut.desc()).all()
 
     return render_template('parametrage_defauts.html', defauts=defauts,user=user,elements=elements)
