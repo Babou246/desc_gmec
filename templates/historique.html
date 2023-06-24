@@ -48,7 +48,6 @@
               {% elif user.new_service_id == 4 %}ISCC{% elif user.new_service_id == 5 %}ISREC{% elif user.new_service_id == 6 %}ISFAC{% elif user.new_service_id == 7 %}
               ISGRC{% elif user.new_service_id == 8 %}ISDC{% endif %} </td>
             <td>{{ user.transition_date }}</td>
-            {{ user.user.nom }}
             {% endfor %}
           </tr>
         </tbody>
