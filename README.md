@@ -12,8 +12,7 @@ source env/bin/activate
 python3 app.py
 
 ## Dans app.py ceci va créer les tables
-with app.app_context(): 
-
+with app.app_context(): '<br>'
     db.create_all()
 
 ## Mettre à jour les tables
