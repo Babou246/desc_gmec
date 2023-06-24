@@ -40,7 +40,6 @@ from email.mime.text import MIMEText
 from flask_mail import Mail, Message
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-from mail_rappel import envoyer_rappel,envoyer_mail_rappel
 from flask_paginate import Pagination, get_page_parameter
 
 # Configuration 
@@ -783,28 +782,37 @@ def chargement_tickets():
 
                     # Envoyer une mail les concerné
                     data = pd.read_csv(file_path)
-                    noms_abrege_rejetes = data['XX_AGENT_RESPONSABLE'].tolist()
+                    agents = df['XX_AGENT_RESPONSABLE'].unique()
 
-                    # Récupérer les e-mails des utilisateurs correspondant aux noms_abrege rejetés
-                    emails_rejetes = User.query.filter(User.nom_abrege.in_(noms_abrege_rejetes)).with_entities(User.email).all()
+                    for agent in agents:
+                        # Récupérer les informations de l'agent
+                        agent_info = User.query.filter(User.nom_abrege == agent).first()
+                        if agent_info:
+                            recipient = agent_info.email
+                            nom_abrege_agent = agent_info.nom_abrege
+                            login = agent_info.login
+                            nom = agent_info.nom
+                            mois = "06/2023"  # Remplacer par la vraie valeur
 
-                    if emails_rejetes:
-                        # Envoyer un e-mail à chaque utilisateur rejeté
-                        for email in emails_rejetes:
-                            # L'e-mail est le premier élément du tuple
-                            recipient = email[0]
-                            login = "Moustapha"
-                            nom = "SY"
-                            mois = "06/2023"
-                            
                             subject = 'Notification de rejet des Tickets'
-                            body = f'Bonjour {login} {nom} \nLe chargement des échantillons de contrôle des défauts du mois de {mois} est terminé.\n Nous vous invitons à vous connecter à QUALITE pour traiter/commenter les erreurs critiques vous concernant.'
+                            body = f"Bonjour {login} {nom_abrege_agent}," \
+                                f"\nLe chargement des échantillons de contrôle des défauts du mois de {mois} est terminé." \
+                                f"Nous vous invitons à vous connecter à QUALITE pour traiter/commenter les erreurs critiques vous concernant." \
+                                f"\nCordialement," \
+                                f"\nL'équipe QUALITE"
 
-                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com","moustapha.sy@orange-sonatel.com"])
+                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
                             msg.body = body
-
                             mail.send(msg)
 
+                            # Envoyer une copie au N+1
+                            # n_plus_one_recipient = agent_info.n_plus_one_email
+                            n_plus_one_recipient = "diopb4826@gmail.com"
+                            if n_plus_one_recipient:
+                                msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[n_plus_one_recipient])
+                                msg.body = body
+                                mail.send(msg)
+                            
                         # flash("E-mails de rejet envoyés avec succès",'success')
                     # db.session.commit()
 
