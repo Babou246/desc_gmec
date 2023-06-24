@@ -33,8 +33,12 @@ import pandas as pd
 from sqlalchemy import create_engine
 import csv
 import numpy as np
+
+import smtplib
+from email.mime.text import MIMEText
 # from utils import *
 from flask_mail import Mail, Message
+from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from mail_rappel import envoyer_rappel,envoyer_mail_rappel
 from flask_paginate import Pagination, get_page_parameter
@@ -49,12 +53,11 @@ mail = Mail(app)
 bcrypt = Bcrypt()
 
 
-app.config['MAIL_SERVER'] = 'smtp.hushmail.com'
-app.config['MAIL_USERNAME'] = 'babou@gmail.com'
-app.config['MAIL_PASSWORD'] = ''
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_USERNAME'] = 'diopabubakr79@gmail.com'
+app.config['MAIL_PASSWORD'] = 'mjlokyqorvlrzqud'
 app.config['MAIL_DEBUG'] = True
-app.config['MAIL_DEFAULT_SENDER'] = 'babou@gmail.com'
-app.config['MAIL_PORT'] =12458
+app.config['MAIL_PORT'] =465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
 mail = Mail(app)
@@ -67,25 +70,13 @@ with app.app_context():
                                                     #                     Utilitaire                       #
                                                     ######################################################## 
 
-def send_notification_emails(agents):
-    for agent in agents:
-        recipient = agent['email']
-        supervisor = agent['supervisor']
-        subject = 'Notification de chargement'
-        body = f"Bonjour {agent['prenom']} {agent['nom']}," \
-               f"\nLe chargement des échantillons de contrôle des défauts du mois de AAAA/MM est terminé." \
-               f"Nous vous invitons à vous connecter à QUALITE pour traiter/commenter les erreurs critiques vous concernant." \
-               f"\nCordialement," \
-               f"\nL'équipe QUALITE"
-        send_email(recipient, supervisor, subject, body)
+@app.route('/m', methods=['GET','POST'])
+def messs():
+    msg= Message('Hello',sender='diopabubakr79@gmail.com',recipients=['diopabubakr79@gmail.com'])
+    msg.body = 'Hello world I am here me Babou DIOP'
+    msg.send(msg)
 
-
-def send_notification_email(login, password):
-    msg = Message('Notification de création d\'utilisateur',
-                  sender='babou@sonatel-orange.com',
-                  recipients=[login])
-    msg.body = f'Vos identifiants de connexion : \nLogin : {login}\nMot de passe : {password}'
-    return mail.send(msg)
+    return "Envoyé avec success"
 
 
 def generate_code():
@@ -93,35 +84,6 @@ def generate_code():
     # Générer le nouveau code en incrémentant le dernier code utilisé
     nouveau_code = dernier_code + 1
     return nouveau_code
-
-
-def enregistrer_defauts(liste_defauts):
-    # Convertir la liste des défauts en un format adapté pour l'enregistrement dans la base de données
-    defauts_enregistrement = []
-    for defaut in liste_defauts:
-        defaut_enregistrement = {
-            'code': defaut['code'],
-            'type': defaut['type'],
-            'description': defaut['description'],
-            'date_debut': defaut['date_debut'],
-            'date_fin': defaut['date_fin']
-        }
-        defauts_enregistrement.append(defaut_enregistrement)
-    
-    # Enregistrer les défauts dans la base de données
-    save_defauts_to_database(defauts_enregistrement)
-
-def save_defauts_to_database(defauts):
-    for defaut in defauts:
-        defaut_enregistre = Defaut(
-            code=defaut['code'],
-            type=defaut['type'],
-            description=defaut['description'],
-            date_debut=defaut['date_debut'],
-            date_fin=defaut['date_fin']
-        )
-        db.session.add(defaut_enregistre)
-    db.session.commit()
 
 
 ALLOWED_EXTENSIONS = {'csv', 'xlsx'}
@@ -140,14 +102,6 @@ def logout():
     logout_user()
     return redirect('login')
 
-
-# ########## Tester mon mail
-@app.route('/sender')
-def sender():
-    msg = Message('Bonjour Babou',recipients=['giyel66581@aramask.com'])
-    mail.send(msg)
-
-    return 'sent successfully'
 
                         ########################################################
                         #                     Dashboard                        #
@@ -220,13 +174,21 @@ def login():
         # print('===========>',current_user.nom)
 
         user = User.query.filter_by(login=login).first()
-        # Vérifier le mot de passe
-        if user.password == password:
-            login_user(user)
-            return redirect(url_for('home'))
+        if user:
+            # Vérifier le mot de passe
+            if user.password == password:
+                login_user(user)
+                return redirect(url_for('home'))
+            elif not user.login:
+                flash("Le user %s ne se figure pas dans la base",login)
+                return redirect(url_for('login'))
+            else:
+                flash('Mot de passe incorrect', 'error')
+                return redirect(url_for('login'))
         else:
-            flash('Mot de passe incorrect', 'error')
+            flash(f'Cet utilisateur {login} n\'existe pas pas la base de données', 'error')
             return redirect(url_for('login'))
+
 
     return render_template('pages/login.html')
 
@@ -245,7 +207,7 @@ def resolution_utilisateurs():
         role = int(request.form['roleid'])
         sigle_service = request.form['sigle_service']
         login = request.form['login']
-
+        nom=request.form['nom']
         nom_abrege = sigle_service + '_' + prenom.replace(' ', '')
 
         password = "Son@tel2021"
@@ -259,18 +221,22 @@ def resolution_utilisateurs():
         # Générer le hash du mot de passe
         role = Role.query.get(role)  # Récupérer l'instance de la classe Role avec l'ID de rôle
 
-        user = User(matricule=request.form['matricule'], login=request.form['login'], prenom=request.form['prenom'], nom=request.form['nom'], role=role,
+        user = User(matricule=request.form['matricule'], login=request.form['login'], prenom=request.form['prenom'], nom=nom, role=role,
                     sigle_service=request.form['sigle_service'], service_id=int(request.form['service_id']), state=request.form['statut'], email=request.form['email'], nom_abrege=nom_abrege, date_debut=datetime.now(), password="Son@tel2021")
 
         db.session.add(user)
         db.session.commit()
-        # s = URLSafeTimedSerializer('Thisisasecret!')
-        # token = s.dumps('becon58494@bodeem.com', salt='email-confirm')
-        # msg = Message('Confirm Email', sender='becon58494@bodeem.com', recipients=['becon58494@bodeem.com'])
-        # # link = url_for('confirm_email', token=token, _external=True)
-        # msg.body = f'Vos identifiants de connexion : \nLogin : {login}\nMot de passe : {password}\n Cliqué sur le lien'
-        # mail.send(msg)
-        # return redirect(url_for('login'))
+        pwd = "Son@tel2021"
+        subject = 'Notification de la Création de Compte'
+        body = f'Bonjour {prenom} {nom} \nVotre Compte a été crée avec succés avec comme mot de passe par défaut {pwd}'
+
+        msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+        msg.body = body
+
+        mail.send(msg)
+
+
+
     return render_template('pages/menu.html')
 
 
@@ -461,7 +427,6 @@ def consulter_services(id):
     users_service = User.query.filter(User.service_id == id).all()
 
     # consulte = Service.query.filter_by(id=service).first()
-
     return render_template('service_users.html', users_service=users_service)
 
 
@@ -550,6 +515,12 @@ def modifier_defaut(defaut_id):
         if confirm:
             defaut.confirm=confirm
             db.session.commit()
+            subject = 'Confirmation de Votre N+1'
+            body = f'Votre N+1 vient de confirmer le defaut de traitement imputé à {defaut.user_id}'
+
+            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+            msg.body = body
+            mail.send(msg)
         elif request.form.get('description_defaut') or request.form.get('date_fin') or request.form.get('type_defaut') or request.form.get('commentaires') or request.form.get('validation') or request.form.get('evaluer') or request.form.get('n1'):
             defaut.description_defaut = request.form.get('description_defaut')
             defaut.date_fin = request.form.get('date_fin')
@@ -714,14 +685,14 @@ def chargement_tickets():
 
                     df.fillna('', inplace=True)
                     for index, row in df.iterrows():
-                        print('BBBBBBBBonjour')
+                        # print('BBBBBBBBonjour')
                         # Récupérer les valeurs des colonnes
                         if pd.notnull(row['Date de résolution maximum']) or isinstance(row['Date de résolution maximum'], pd.Timestamp):
-                            print('Date de résolution maximum')
+                            # print('Date de résolution maximum')
                             utilisateur = User.query.filter(User.nom_abrege == row['XX_AGENT_RESPONSABLE'], User.state == 'Actif').first()
-                            print('>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<', utilisateur)
+                            # print('>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<', utilisateur)
                             if utilisateur:
-                                print('Insertion successful')
+                                # print('Insertion successful')
                                 # Charger l'enregistrement dans la base de données
                                 ticket = Ticket(
                                     numero_demande=row['N° Commande'],
@@ -764,6 +735,7 @@ def chargement_tickets():
                     # liste_utile.append(long,num_loaded,num_rejected)
                     
                     if num_rejected > 0:
+                        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
                         folder_path = os.path.join(os.getcwd(), 'files_rejet')
                         os.makedirs(folder_path, exist_ok=True)
 
@@ -779,8 +751,31 @@ def chargement_tickets():
                             
                             writer.writerows(rejected_records)
 
-                        # Chemin du répertoire d'upload
+                    # Envoyer une mail les concerné
+                    data = pd.read_csv(file_path)
+                    noms_abrege_rejetes = data['XX_AGENT_RESPONSABLE'].tolist()
 
+                    # Récupérer les e-mails des utilisateurs correspondant aux noms_abrege rejetés
+                    emails_rejetes = User.query.filter(User.nom_abrege.in_(noms_abrege_rejetes)).with_entities(User.email).all()
+
+                    if emails_rejetes:
+                        # Envoyer un e-mail à chaque utilisateur rejeté
+                        for email in emails_rejetes:
+                            # L'e-mail est le premier élément du tuple
+                            recipient = email[0]
+                            login = "Moustapha"
+                            nom = "SY"
+                            mois = "06/2023"
+                            
+                            subject = 'Notification de rejet des Tickets'
+                            body = f'Bonjour {login} {nom} \nLe chargement des échantillons de contrôle des défauts du mois de {mois} est terminé.\n Nous vous invitons à vous connecter à QUALITE pour traiter/commenter les erreurs critiques vous concernant.'
+
+                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com","moustapha.sy@orange-sonatel.com"])
+                            msg.body = body
+
+                            mail.send(msg)
+
+                        # flash("E-mails de rejet envoyés avec succès",'success')
                     # db.session.commit()
 
 

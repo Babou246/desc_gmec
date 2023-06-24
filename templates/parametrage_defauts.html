@@ -216,44 +216,47 @@
                         <td>{{ defaut.commentaires }}</td>
                         <td>
                             {% if defaut.confirm == "OUI" %}
-                                <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal">
+                                <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal{{ defaut.id }}">
                                     <strong>{{ defaut.commentaires_n1 }}</strong>
                                 </a>
                                 {% else %}
-                                <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal">
+                                <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal{{ defaut.id }}">
                                     {{ defaut.commentaires_n1 }}
                                 </a>
                                 {% endif %}
                         </td>
                           
                         <!-- Confirmation Modal -->
-                        <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                </button>
+                        {% for defaut in defauts %}
+                        
+                            <div class="modal fade" id="confirmationModal{{ defaut.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel{{ defaut.id }}"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="confirmationModalLabel{{ defaut.id }}">Confirmation</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Voulez-vous envoyer un e-mail au concerné ?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="{{ url_for('modifier_defaut', defaut_id=defaut.id) }}" method="post">
+                                    <input type="hidden" name="defaut_id" value="{{ defaut.confirm }}">
+                                    <label for="confirmation">Confirmation:</label>
+                                    <select name="OUI" class="form-control">
+                                        <option value="OUI" style="background-color: aqua;">OUI</option>
+                                        <option value="NON" style="background-color: red;">NON</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                                    </form>
+                                </div>
+                                </div>
                             </div>
-                            <div class="modal-body">
-                                <p>Voulez-vous envoyer un e-mail au concerné ?</p>
                             </div>
-                            <div class="modal-footer">
-                                <form action="{{ url_for('modifier_defaut', defaut_id=defaut.id) }}" method="post">
-                                <input type="hidden" name="defaut_id" value="{{ defaut.id }}">
-                                <label for="validation">Confirmation:</label>
-                                <select name="OUI" class="form-control">
-                                    <option value="OUI">OUI</option>
-                                    <option value="NON">NON</option>
-                                </select>
-                                <button type="submit" class="btn btn-primary">Envoyer</button>
-                                </form>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
+                        {% endfor %}
                           
                           
                         <td>{{ defaut.service }}</td>

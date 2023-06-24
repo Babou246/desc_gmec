@@ -67,7 +67,7 @@
         </thead>
         <tbody>
           {% for user in users_pagination.items %}
-          {% if user.date_fin %}
+          {% if user.date_fin and user.state == "Clocturé"%}
           <tr>
             <td style="background-color: red;">{{ user.prenom }}</td>
             <td style="background-color: red;">{{ user.nom }}</td>

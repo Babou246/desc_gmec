@@ -67,7 +67,7 @@ CREATE TABLE `corbeille` (
   KEY `service_id` (`service_id`),
   CONSTRAINT `corbeille_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`),
   CONSTRAINT `corbeille_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `service` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +76,7 @@ CREATE TABLE `corbeille` (
 
 LOCK TABLES `corbeille` WRITE;
 /*!40000 ALTER TABLE `corbeille` DISABLE KEYS */;
-INSERT INTO `corbeille` VALUES (2,'2014OFRT','huser','HUSER','COLY',2,'ISCL',2,'Actif','huser@sonatel-orange.com','ISCL_HUSER','2023-06-18 20:54:56','2023-06-22 16:21:47','Son@tel2021',1),(3,'023ISGTR','mamadoulamine','MamadouLamine','SY',1,'ISGTR',1,'Clocturé','mamadoulamine@sonatel-orange.com','ISGTR_MamadouLamine','2023-06-16 23:05:11','2023-06-22 16:31:19','Son@tel2021',1);
+INSERT INTO `corbeille` VALUES (2,'2014OFRT','huser','HUSER','COLY',2,'ISCL',2,'Actif','huser@sonatel-orange.com','ISCL_HUSER','2023-06-18 20:54:56','2023-06-22 16:21:47','Son@tel2021',1),(3,'023ISGTR','mamadoulamine','MamadouLamine','SY',1,'ISGTR',1,'Clocturé','mamadoulamine@sonatel-orange.com','ISGTR_MamadouLamine','2023-06-16 23:05:11','2023-06-22 16:31:19','Son@tel2021',1),(6,'2014O67SO','Babou2','HGAR','SALL',1,'SGRD',1,'Clocturé','bza@sonatel-orange.com','SGRD_HGAR','2023-06-19 00:31:01','2023-06-23 10:26:18','Son@tel2021',1);
 /*!40000 ALTER TABLE `corbeille` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -269,7 +269,7 @@ CREATE TABLE `tickets` (
   `evaluateur` varchar(30) DEFAULT NULL,
   `numero_demande` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13467 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13710 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -305,7 +305,7 @@ CREATE TABLE `type_defauts` (
   `service` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -314,7 +314,7 @@ CREATE TABLE `type_defauts` (
 
 LOCK TABLES `type_defauts` WRITE;
 /*!40000 ALTER TABLE `type_defauts` DISABLE KEYS */;
-INSERT INTO `type_defauts` VALUES (1,'code_124','Traitement','DEMANDE DE MISE À JOUR.pdf        Bonjour  Merci de prendre en charge cette demande de mise à jour de cette pièce d&apos;identité.   L&apos;erreur se trouve le PRÉNOM et le NOM.   Bien cordialement PRENOM : ALPHA OUMAR NOM : LY',NULL,'2023-06-22',NULL,'eleonore@sonatel-orange.sn','','','','Invalide','ISCL'),(2,'code_15867','Qualification','DEBLOCAGE ET  REINITIALISATION USER TARNGO //w2c_margndiaye_cce       Bonjour,     Nous sollicitons votre assistance pour le déblocage et  réinitialisation du Mot de Pass TANGO  ci-dessous :         Agent       User       Msg d’erreur         Margarite Di',NULL,'2023-06-15','2023-06-22','Chems@sonatel-orange.com','rien à faire pour le moment','je serai pour leval','Bjr le deblocages est fini','Invalide','ISFAC'),(3,'code_16383','Traitement','LA SIM EST LIBEREE',NULL,'2023-06-01',NULL,'safietou.ndiaye@sonatel-orange.com','','','','Invalide','ISDC'),(4,'code_11373','Qualification','ACTIVATION DONNEES MOBILES 779443799       Bonjour Merci de votre soutien. Le client n’arrive pas à se connecter avec un pass valide et terminal bien paramétré. Cdlt\r\n',NULL,'2023-06-06',NULL,'bza@sonatel-orange.com','','','','Invalide','ISGTR');
+INSERT INTO `type_defauts` VALUES (1,'code_124','Traitement','DEMANDE DE MISE À JOUR.pdf        Bonjour  Merci de prendre en charge cette demande de mise à jour de cette pièce d&apos;identité.   L&apos;erreur se trouve le PRÉNOM et le NOM.   Bien cordialement PRENOM : ALPHA OUMAR NOM : LY','NON','2023-06-22',NULL,'eleonore@sonatel-orange.sn','','','','Invalide','ISCL'),(2,'code_15867','Qualification','DEBLOCAGE ET  REINITIALISATION USER TARNGO //w2c_margndiaye_cce       Bonjour,     Nous sollicitons votre assistance pour le déblocage et  réinitialisation du Mot de Pass TANGO  ci-dessous :         Agent       User       Msg d’erreur         Margarite Di','OUI','2023-06-15','2023-06-22','Chems@sonatel-orange.com','rien à faire pour le moment','je serai pour leval','Bjr le deblocages est fini','Invalide','ISFAC'),(3,'code_16383','Traitement','LA SIM EST LIBEREE',NULL,'2023-06-01',NULL,'safietou.ndiaye@sonatel-orange.com','','','','Invalide','ISDC'),(4,'code_11373','Qualification','ACTIVATION DONNEES MOBILES 779443799       Bonjour Merci de votre soutien. Le client n’arrive pas à se connecter avec un pass valide et terminal bien paramétré. Cdlt\r\n','OUI','2023-06-06',NULL,'bza@sonatel-orange.com','','','','Invalide','ISGTR'),(5,'code_4690','Qualification','Saisi des operation ERGP et OTP dans le canal Sud de Ngor et de Colobane trés saturé','NON','2023-06-23','2023-06-23','Chems@sonatel-orange.com','Coupure des cables ...','cause racine bien mis','veuillez valider le travail si possible','Invalide','ISFAC'),(6,'code_8567','Qualification','&#10;&#10;Bonjour,Les lignes ci-dessous sont ressorties en écart : ils n&apos;avaient pas le marquage Camel. Une demande de correction a été faite aujourd&apos;hui. Cependant qu&apos;elle est la cause de ces dysfonctionnements.Merci pour le soutien.MSISDN221776383617221776382 FFFFFF','NON','2023-06-23','2023-06-24','yacine@sonatel-orange.com','','evaluation','bjr boss les lignes sont dispo hhh','Invalide','ISCC'),(7,'code_16344','Qualification','les compteurs adsl','OUI','2023-06-23','2023-06-23','diopabubakr79@gmail.com','','eval l\'agent','Bonne des types','Invalide','ISFAC');
 /*!40000 ALTER TABLE `type_defauts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -347,7 +347,7 @@ CREATE TABLE `user` (
   KEY `service_id` (`service_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`),
   CONSTRAINT `user_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `service` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -356,7 +356,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'2009ISCC','yacine','Yacine','Ndiaye',1,'ISCC',4,'Actif','yacine@sonatel-orange.com','ISCC_Yacine','2020-01-01 00:00:00',NULL,'passer',1),(2,'2000ISGTR','babacar','Babacar','CISSE',2,'CDS',3,'Actif','babacar.cisse@sonatel-orange.com','CDS_Babacar','2023-06-07 00:00:00',NULL,'passera',1),(6,'2014O67SO','babou','Babacar','DIOP',3,'ISCCOP',3,'Actif','babacar.diop@sonatel-orange.com','ISCCOP_Babacar','2023-06-17 07:10:31',NULL,'passer',1),(28,'2014O67SO','Babou2','HGAR','SALL',1,'SGRD',1,'Actif','bza@sonatel-orange.com','SGRD_HGAR','2023-06-19 00:31:01',NULL,'Son@tel2021',1),(33,'1209LKJS','tidiane','Tidiane','CISSE',2,'ISCC',4,'Actif','tidiane.cisse@sonatel-orange.com','ISCC_Tidiane','2023-06-19 10:25:49',NULL,'Son@tel2021',1),(35,'2343DDD','ibrahima','Ibrahima','CISSE',2,'DDS',8,'Actif','ibrahima.cisse@sonatel-orange.com','DDS_Ibrahima','2023-06-19 10:33:11',NULL,'Son@tel2021',1),(40,'HJKRTE29','badou','badou','DIOP',4,'ISCC',4,'Actif','badou@sonatel-orange.com','ISCC_badou','2023-06-19 14:04:02',NULL,'Son@tel2021',1),(41,'2045O67QS','sira','Sira','SALL',2,'ISREC',5,'Actif','sira@sonatel-orange.com','ISREC_Sira','2023-06-19 16:18:01',NULL,'Son@tel2021',1),(42,'DIAO90Y','PapeDemba','PapaDemba','DIAO',2,'ISGTR',1,'Actif','papedemba@sonatel-orange.com','ISGTR_PapaDemba','2023-06-20 08:35:42',NULL,'Son@tel2021',1),(43,'4587SYL','Talibouya','Talibouya','SYLLA',2,'ISTAC',6,'Actif','Talibouya@sonatel-orange.com','ISTAC_Talibouya','2023-06-20 08:41:50',NULL,'Son@tel2021',1),(45,'4587CHMS','chems','Chems','SYLLA',4,'ISTAC',6,'Actif','Chems@sonatel-orange.com','ISTAC_Chems','2023-06-20 08:45:08',NULL,'Son@tel2021',1),(46,'2KL1SFEG','eleonore','Eleonore','DIOUF',1,'ISCL',2,'Actif','eleonore@sonatel-orange.sn','ISCL_Eleonore','2023-06-22 14:50:43',NULL,'Son@tel2021',1),(47,'2011NDIA','Safietou','Safietou','Ndiaye',1,'ISDC',8,'Actif','safietou.ndiaye@sonatel-orange.com','ISDC_Safietou','2023-06-22 15:20:23',NULL,'Son@tel2021',1);
+INSERT INTO `user` VALUES (1,'2009ISCC','yacine','Yacine','Ndiaye',1,'ISCC',4,'Actif','yacine@sonatel-orange.com','ISCC_Yacine','2020-01-01 00:00:00',NULL,'passer',1),(2,'2000ISGTR','babacar','Babacar','CISSE',2,'CDS',3,'Actif','babacar.cisse@sonatel-orange.com','CDS_Babacar','2023-06-07 00:00:00',NULL,'passera',1),(6,'2014O67SO','babou','Mamadou','COUNDOUL',3,'ISCCOP',3,'Actif','babacar.diop@sonatel-orange.com','ISCCOP_Mamadou','2023-06-17 07:10:31',NULL,'passer',1),(33,'1209LKJS','tidiane','Tidiane','CISSE',2,'ISCC',4,'Actif','tidiane.cisse@sonatel-orange.com','ISCC_Tidiane','2023-06-19 10:25:49',NULL,'Son@tel2021',1),(35,'2343DDD','ibrahima','Ibrahima','CISSE',2,'DDS',8,'Actif','ibrahima.cisse@sonatel-orange.com','DDS_Ibrahima','2023-06-19 10:33:11',NULL,'Son@tel2021',1),(40,'HJKRTE29','badou','badou','DIOP',4,'ISCC',4,'Actif','badou@sonatel-orange.com','ISCC_badou','2023-06-19 14:04:02',NULL,'Son@tel2021',1),(41,'2045O67QS','sira','Sira','SALL',2,'ISREC',5,'Actif','sira@sonatel-orange.com','ISREC_Sira','2023-06-19 16:18:01',NULL,'Son@tel2021',1),(42,'DIAO90Y','PapeDemba','PapaDemba','DIAO',2,'ISGTR',1,'Actif','papedemba@sonatel-orange.com','ISGTR_PapaDemba','2023-06-20 08:35:42',NULL,'Son@tel2021',1),(43,'4587SYL','Talibouya','Talibouya','SYLA',2,'ISTAC',6,'Actif','Talibouya@sonatel-orange.com','ISTAC_Talibouya','2023-06-20 08:41:50',NULL,'Son@tel2021',1),(45,'4587CHMS','chems','Chems','SYLLA',4,'ISTAC',6,'Actif','Chems@sonatel-orange.com','ISTAC_Chems','2023-06-20 08:45:08',NULL,'Son@tel2021',1),(46,'2KL1SFEG','eleonore','Eleonore','DIOUF',1,'ISCL',2,'Actif','eleonore@sonatel-orange.sn','ISCL_Eleonore','2023-06-22 14:50:43',NULL,'Son@tel2021',1),(47,'2011NDIA','Safietou','Safietou','Ndiaye',1,'ISDC',8,'Clocturé','safietou.ndiaye@sonatel-orange.com','ISDC_Safietou','2023-06-22 15:20:23','2023-06-23 10:26:02','Son@tel2021',1),(49,'199RZE45','marietou','Marietou','Ndiaye',1,'ISCC',4,'Actif','marietou.diop@sonatel-orange.sn','ISCC_Marietou','2023-06-22 20:25:31',NULL,'Son@tel2021',1),(50,'DOUC111','doucoure','Alpha','DOUCOURE',4,'ISFAC',6,'Actif','diopabubakr79@gmail.com','ISFAC_Alpha','2023-06-23 11:40:27',NULL,'Son@tel2021',1);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -369,4 +369,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-06-22 20:07:04
+-- Dump completed on 2023-06-23 12:16:40
