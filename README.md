@@ -13,6 +13,7 @@ python3 app.py
 
 ## Dans app.py ceci va créer les tables
 with app.app_context(): 
+
     db.create_all()
 
 ## Mettre à jour les tables
