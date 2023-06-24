@@ -50,12 +50,12 @@
             <td>{{ user.date_fin }}</td>
             {% if current_user.role.role == "Chef de département"%}
             <td>
-              <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
+              <!-- <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
                 <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
                   data-bs-placement="top" title="Modifier">
                   <i class="ri-edit-line fs-11 lh-1"></i>
                 </button>
-              </a>
+              </a> -->
 
               <a href="{{ url_for('delete_dans_cor',user_id=user.id) }}"
                 onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} definitivement dans nos base de données : ?')"
