@@ -26,10 +26,44 @@
                         <!-- <h1>Paramétrage des types de défauts</h1> -->
                         <form method="POST" action="{{ url_for('parametrage_defauts') }}">
                             <label for="type_defaut">Type de défaut:</label>
-                            <select name="type_defaut" class="form-control">
+                            <select name="type_defaut" class="form-control" id="type-defaut-select">
                                 <option value="Qualification">Qualification</option>
                                 <option value="Traitement">Traitement</option>
                             </select>
+                            <button type="button" id="add-validation-btn">+</button>
+                            <script>
+                                // Récupérer les éléments du formulaire
+                                var typeDefautSelect = document.getElementById('type-defaut-select');
+                                var addValidationBtn = document.getElementById('add-validation-btn');
+                            
+                                // Gestionnaire d'événement pour le clic sur le bouton "+"
+                                addValidationBtn.addEventListener('click', function() {
+                                    // Demander à l'utilisateur d'entrer une nouvelle option
+                                    var newOption = prompt('Entrez une nouvelle option');
+                            
+                                    if (newOption) {
+                                        // Créer une nouvelle option avec la valeur saisie
+                                        var option = document.createElement('option');
+                                        option.value = newOption;
+                                        option.text = newOption;
+                            
+                                        // Ajouter la nouvelle option à la sélection
+                                        typeDefautSelect.appendChild(option);
+                                    }
+                                });
+                            
+                                // Gestionnaire d'événement pour le clic sur le bouton "-"
+                                typeDefautSelect.addEventListener('change', function(e) {
+                                    var target = e.target;
+                                    if (target.tagName === 'OPTION') {
+                                        if (confirm('Voulez-vous supprimer cette option ?')) {
+                                            // Supprimer l'option sélectionnée
+                                            target.remove();
+                                        }
+                                    }
+                                });
+                            </script>
+                            
                             <br>
                             <label for="description_defaut">Description du défaut:</label>
                             <textarea class="form-control" name="description_defaut" rows="5" cols="50" required></textarea>
@@ -49,10 +83,13 @@
                             <input type="email" name="email" class="form-control" id="">
                             <br>
                             <label for="validation">Validations:</label>
-                            <select name="validation" class="form-control">
+                            <label for="validation">Validations:</label>
+                            <select name="validation" id="validation-select" class="form-control">
                                 <option value="Invalide">Invalide</option>
                                 <option value="Valide">Valide</option>
                             </select>
+                            
+
                             <div id="" style="display: none;">
                                 <label for="">Commentaire évalué (justification) <strong style="color: red;">*</strong>:</label>
                                 <!-- <textarea class="form-control" id="" name="evaluer" rows="5" cols="10" ></textarea> -->
