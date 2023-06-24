@@ -24,6 +24,8 @@ set foreign_key_checks=1;
 
 ## Migration de la base de données
 flask dn init
+
+## Si le dossier migrations est présent inutile de faire *flask* *init*
 flask db migrate -m "message"
 flask db upgrade
 
