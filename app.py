@@ -15,7 +15,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import bcrypt
 import glob
-from models import User,db,app,TypeDefaut,Role,Service,Fichier,Fichier_charger,Ticket,Corbeille
+from models import User,db,app,TypeDefaut,Role,Service,Fichier,Fichier_charger,Ticket,Corbeille,UserServiceHistory
 from flask_migrate import Migrate
 from decimal import Decimal
 import openpyxl
@@ -446,6 +446,14 @@ def delete_dans_cor(user_id):
         db.session.commit()
     return render_template('corbeille.html')
 
+@app.route('/historique_user')
+def historique_user():
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    per_page = 10  # Nombre de lignes par page
+
+    # Obtenir la liste paginée des utilisateurs
+    user_historique = UserServiceHistory.query.order_by(desc(UserServiceHistory.id)).paginate(page=page, per_page=per_page)
+    return render_template('historique.html',user_historique=user_historique)
 
 @app.route('/corbeille')
 def get_corbeille():

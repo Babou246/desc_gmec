@@ -140,6 +140,7 @@
             <li><a href="page-events.html">Transactions</a></li>
             {% if current_user.role.role == "Chef de département" %}
             <li><a href="{{ url_for('get_corbeille') }}">Corbeille</a></li>
+            <li><a href="{{ url_for('historique_user') }}">Historiques</a></li>
             {% endif %}
           </ul>
         </li>

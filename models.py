@@ -303,3 +303,17 @@ class Corbeille(UserMixin, db.Model):
     @staticmethod
     def get(id):
         return Corbeille(id)
+
+
+
+class UserServiceHistory(db.Model):
+    __tablename__ = 'user_service_history'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    old_service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    new_service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    transition_date = db.Column(db.DateTime, nullable=False)
+
+    user = db.relationship("User", backref="service_history")
+    old_service = db.relationship("Service", foreign_keys=[old_service_id])
+    new_service = db.relationship("Service", foreign_keys=[new_service_id])
