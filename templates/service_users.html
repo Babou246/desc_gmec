@@ -165,7 +165,7 @@
                                                     {% if current_user.role.role == "Chef de Service" %}
 
                                                     <td>
-                                                        <a href="" data-bs-toggle="modal" data-bs-target="#info">
+                                                        <a href="" data-bs-toggle="modal" data-bs-target="#info_{{ user.id }}">
                                                             <button type="button"
                                                                 class="btn btn-secondary btn-sm align-items-center gap-2"
                                                                 data-bs-toggle="tooltip" data-bs-placement="top"
@@ -175,7 +175,7 @@
                                                         </a>
 
                                                         <!-- Modal -->
-                                                        <div class="modal fade" id="info" tabindex="-1" role="dialog"
+                                                        <div class="modal fade" id="info_{{ user.id }}" tabindex="-1" role="dialog"
                                                             aria-labelledby="infoModalLabel" aria-hidden="true">
                                                             <div class="modal-dialog" role="document">
                                                                 <div class="modal-content">

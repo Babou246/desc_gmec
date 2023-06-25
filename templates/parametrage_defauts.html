@@ -254,8 +254,8 @@
                         <td>{{ defaut.user_id }}</td>
                         <!-- <td>{{ defaut.commentaires }}</td> -->
                         <td>{{ defaut.commentaires }}</td>
-                        {% if defaut.confirm == "OUI" %}
                         <td>
+                            {% if defaut.confirm == "OUI" %}
                                 <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal{{ defaut.id }}">
                                     <strong>{{ defaut.commentaires_n1 }}</strong>
                                 </a>
