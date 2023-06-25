@@ -36,9 +36,7 @@
                                 var typeDefautSelect = document.getElementById('type-defaut-select');
                                 var addValidationBtn = document.getElementById('add-validation-btn');
                             
-                                // Gestionnaire d'événement pour le clic sur le bouton "+"
                                 addValidationBtn.addEventListener('click', function() {
-                                    // Demander à l'utilisateur d'entrer une nouvelle option
                                     var newOption = prompt('Entrez un nouveau type de Traitement');
                             
                                     if (newOption) {
@@ -52,14 +50,16 @@
                                     }
                                 });
                             
-                                // Gestionnaire d'événement pour le clic sur le bouton "-"
-                                typeDefautSelect.addEventListener('change', function(e) {
+                                 // Gestionnaire d'événement pour le clic sur le bouton "-" de chaque option
+                                typeDefautSelect.addEventListener('click', function(e) {
                                     var target = e.target;
-                                    if (target.tagName === 'OPTION') {
+                                    console.log(target);
+                                    if (target.tagName === 'BUTTON') {
                                         if (confirm('Voulez-vous supprimer cette option ?')) {
-                                            // Supprimer l'option sélectionnée
-                                            target.remove();
-                                        }
+                                            // Supprimer l'option parente du bouton
+                                            var option = target.parentNode;
+                                            option.remove();
+                                      }
                                     }
                                 });
                             </script>
@@ -254,14 +254,14 @@
                         <td>{{ defaut.user_id }}</td>
                         <!-- <td>{{ defaut.commentaires }}</td> -->
                         <td>{{ defaut.commentaires }}</td>
+                        {% if defaut.confirm == "OUI" %}
                         <td>
-                            {% if defaut.confirm == "OUI" %}
                                 <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal{{ defaut.id }}">
                                     <strong>{{ defaut.commentaires_n1 }}</strong>
                                 </a>
                                 {% else %}
                                 <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal{{ defaut.id }}">
-                                    {{ defaut.commentaires_n1 }}
+                                    <strong>{{ defaut.commentaires_n1 }}</strong>
                                 </a>
                                 {% endif %}
                         </td>

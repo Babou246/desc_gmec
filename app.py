@@ -512,7 +512,6 @@ def service_users():
 def consulter_services(id):
     # service = Service.query.get(id)
     users_service = User.query.filter(User.service_id == id).all()
-
     # consulte = Service.query.filter_by(id=service).first()
     return render_template('service_users.html', users_service=users_service)
 

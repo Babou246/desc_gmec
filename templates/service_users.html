@@ -104,7 +104,7 @@
                                                         <td style="background-color: aqua;">{{ user.nom }}</td>
                                                         <td style="background-color: aqua;">{{ user.date_debut }}</td>
                                                         <td style="background-color: aqua;">{{ user.service.nom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.email }}- (<strong>Chef de Service</strong>)</td>
+                                                        <td style="background-color: aqua;">{{ user.email }}- (<strong>{{ user.role.role }}</strong>)</td>
                                                         <td style="background-color: aqua;">{{ user.state }}</td>
                                                         {% else %}
                                                         <td>{{ user.matricule }}</td>
@@ -340,7 +340,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <a href=""
+                                                        <!-- <a href=""
                                                             onclick="return confirm('Voulez vous supprimer le métrique: ?')"
                                                             title="Supprimer">
 
@@ -348,7 +348,7 @@
                                                                 data-bs-toggle="tooltip" data-bs-placement="top"
                                                                 title="Supprimer"><i
                                                                     class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
-                                                        </a>
+                                                        </a> -->
 
                                                     </td>
                                                     {% endif %}
