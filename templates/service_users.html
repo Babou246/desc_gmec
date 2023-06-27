@@ -193,7 +193,7 @@
                                                                             method="POST">
                                                                             {% with messages = get_flashed_messages() %}
                                                                             {% if messages %}
-                                                                            <div class="alert alert-warning">
+                                                                            <div class="alert alert-warning" id="flash-message">
                                                                                 {{ messages[0] }}
                                                                             </div>
                                                                             {% endif %}

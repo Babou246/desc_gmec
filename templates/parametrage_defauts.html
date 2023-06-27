@@ -3,7 +3,7 @@
 {% block title %}
 <title>Paramétrage des types de défauts</title>
 {% endblock %}
-<div class="container">
+<!-- <div class="container"> -->
 
     <body>
         
@@ -139,7 +139,7 @@
                 {% endif %}
             </tr>
             {% for defaut in defauts %}
-            {% if defaut.user_id == current_user.email %}
+            {% if defaut.user_email == current_user.email %}
 
             <tr>
                 <td>{{ defaut.code }}</td>
@@ -147,7 +147,7 @@
                 <td>{{ defaut.description_defaut }}</td>
                 <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
                 <td>{{ defaut.date_fin.strftime('%d/%m/%Y') if defaut.date_fin else '' }}</td>
-                <td>{{ defaut.user_id }}</td>
+                <td>{{ defaut.user_email }}</td>
                 <td>{{ defaut.commentaires }}</td>
                 <td>{{ defaut.commentaires_evaluer }}</td>
                 <td>{{ defaut.service }}</td>
@@ -170,7 +170,7 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="modifierModalLabel{{ defaut.id }}">Modifier le défaut</h5>
+                                    <h5 class="modal-title" id="modifierModalLabel{{ defaut.id }}">Modifier le défauthhhhhhhhh</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
@@ -178,9 +178,10 @@
                                         
                                         <label for="type_defaut">Type de défaut:</label>
                                         <select class="form-control" name="type_defaut">
-                                            <option value="Qualification">Qualification</option>
-                                            <option value="Traitement">Traitement</option>
-                                        </select>
+                                            {% for defaut in defauts %}
+                                                <option value="{{ defaut.type_defaut }}">{{ defaut.type_defaut }}</option>
+                                            {% endfor %}
+                                        </select><br><br>
                                         <label for="description_defaut">Description du défaut:</label>
                                         <textarea class="form-control" name="description_defaut" rows="5" cols="50">{{ defaut.description_defaut }}</textarea>
                                         <br>
@@ -251,19 +252,19 @@
                         <td>{{ defaut.description_defaut }}</td>
                         <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
                         <td>{{ defaut.date_fin.strftime('%d/%m/%Y') if defaut.date_fin else '' }}</td>
-                        <td>{{ defaut.user_id }}</td>
+                        <td>{{ defaut.user_email }}</td>
                         <!-- <td>{{ defaut.commentaires }}</td> -->
                         <td>{{ defaut.commentaires }}</td>
                         <td>
                             {% if defaut.confirm == "OUI" %}
                                 <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal{{ defaut.id }}">
-                                    <strong>{{ defaut.commentaires_n1 }}</strong>
+                                    <strong>{{ defaut.commentaires_n1 }} - <span style="color: rgb(11, 133, 133);">(Confirmé)</span></strong>
                                 </a>
                                 {% else %}
                                 <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal{{ defaut.id }}">
-                                    <strong>{{ defaut.commentaires_n1 }}</strong>
+                                    <strong>{{ defaut.commentaires_n1 }}  <br> <span style="color: rgb(185, 36, 10);">(Non Confirmé)</span></strong>
                                 </a>
-                                {% endif %}
+                            {% endif %}
                         </td>
                         <td>{{ defaut.commentaires_evaluer }}</td>
                           
@@ -284,12 +285,13 @@
                                     <p>Voulez-vous envoyer un e-mail au concerné ?</p>
                                 </div>
                                 <div class="modal-footer">
+                                    
                                     <form action="{{ url_for('modifier_defaut', defaut_id=defaut.id) }}" method="post">
                                     <input type="hidden" name="defaut_id" value="{{ defaut.confirm }}">
                                     <label for="confirmation">Confirmation:</label>
                                     <select name="OUI" class="form-control">
-                                        <option value="OUI" style="background-color: aqua;">OUI</option>
-                                        <option value="NON" style="background-color: red;">NON</option>
+                                        <option value="OUI">OUI</option>
+                                        <option value="NON">NON</option>
                                     </select>
                                     <button type="submit" class="btn btn-primary">Envoyer</button>
                                     </form>
@@ -350,7 +352,7 @@
                         <td>{{ defaut.description_defaut }}</td>
                         <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
                         <td>{{ defaut.date_fin.strftime('%d/%m/%Y') if defaut.date_fin else '' }}</td>
-                        <td>{{ defaut.user_id }}</td>
+                        <td>{{ defaut.user_email }}</td>
                         <td>{{ defaut.commentaires }}</td>
                         <td>{{ defaut.service }}</td>
                         <td>{{ defaut.validation }}</td>
@@ -401,17 +403,17 @@
                 <td>{{ defaut.description_defaut }}</td>
                 <td>{{ defaut.date_debut.strftime('%d/%m/%Y') }}</td>
                 <td>{{ defaut.date_fin.strftime('%d/%m/%Y') if defaut.date_fin else '' }}</td>
-                <td>{{ defaut.user_id }}</td>
+                <td>{{ defaut.user_email }}</td>
                 <td>{{ defaut.commentaires }}</td>
 
                 <td>
                     {% if defaut.confirm == "OUI" %}
                         <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);" data-target="#confirmationModal">
-                            <strong>{{ defaut.commentaires_n1 }}</strong>
+                            <strong>{{ defaut.commentaires_n1 }} - <span style="color: rgb(11, 133, 133);">(Confirmé)</span></strong>
                         </a>
                         {% else %}
                         <a href="#" data-toggle="modal" style="color: black;" data-target="#confirmationModal">
-                            {{ defaut.commentaires_n1 }}
+                            <strong>{{ defaut.commentaires_n1 }} <br> <span style="color: rgb(185, 36, 10);">(Non Confirmé)</span></strong>
                         </a>
                         {% endif %}
                 </td>
@@ -461,5 +463,5 @@
             {% endif %}
             {% endfor %}
         </table>
-</div>
+<!-- </div> -->
 {% endblock %}

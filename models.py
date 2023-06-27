@@ -9,12 +9,12 @@ import random
 from sqlalchemy import event,DDL
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm.attributes import get_history
-
+from datetime import datetime
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://babou:passer@localhost/desc_users'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://babou:passer@localhost/yeswecan'
 app.secret_key = 'your_secret_key'
 db = SQLAlchemy(app)
 
@@ -108,12 +108,22 @@ class TypeDefaut(db.Model):
     confirm = db.Column(db.String(20))
     date_debut = db.Column(db.Date, nullable=False)
     date_fin = db.Column(db.Date)
-    user_id = db.Column(db.String(200), nullable=False)
+    user_email = db.Column(db.String(200), nullable=False)
     commentaires=db.Column(db.TEXT)
     commentaires_evaluer = db.Column(db.String(255))
     commentaires_n1 = db.Column(db.String(255))
     validation = db.Column(db.String(20), nullable=False)
     service = db.Column(db.String(100),nullable=False)
+    date_dernier_rappel = db.Column(db.Date)
+
+    @staticmethod
+    def get_defauts_to_remind():
+        today = datetime.now().date()
+        return TypeDefaut.query.filter(TypeDefaut.confirm == 'NON', TypeDefaut.date_dernier_rappel < today).all()
+
+    def set_last_reminder_date(self, date):
+        self.date_dernier_rappel = date
+        db.session.commit()
 
     @staticmethod
     def get_next_code():
@@ -121,21 +131,26 @@ class TypeDefaut(db.Model):
         if code:
             code = random.getrandbits(14)+random.randint(112,666)+1
         return 'code_'+str(code)
+    
+    @staticmethod
+    def get_defauts_by_user_email(email):
+        return TypeDefaut.query.filter_by(user_email=email).all()
 
     
-    def __init__(self,code, type_defaut, description_defaut,confirm, date_debut, date_fin=None,user_id=None,commentaires="",commentaires_evaluer="",commentaires_n1="",validation="Invalide",service=None):
+    def __init__(self,code, type_defaut, description_defaut,confirm, date_debut, date_fin=None,user_email=None,commentaires="",commentaires_evaluer="",commentaires_n1="",validation="Invalide",service=None,date_dernier_rappel=datetime.now()):
         self.code = code
         self.type_defaut = type_defaut
         self.description_defaut = description_defaut
         self.confirm=confirm
         self.date_debut = date_debut
         self.date_fin = date_fin
-        self.user_id=user_id,
+        self.user_email=user_email,
         self.commentaires = commentaires
         self.commentaires_evaluer=commentaires_evaluer
         self.commentaires_n1=commentaires_n1
         self.validation = validation
         self.service=service
+        self.date_dernier_rappel=date_dernier_rappel
 
 
 # Définir la classe modèle pour la table Ticket

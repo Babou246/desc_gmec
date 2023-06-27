@@ -65,11 +65,10 @@
                       <span class="tx-12 tx-color-03">Manila, Philippines</span>
                     </div><!-- card-body -->  
                     <div class="card-footer tx-13">
-                      
-                      {% if current_user.role.role == "Chef de département" or current_user.role.nom == role.role %}
+                      {% if current_user.role.role == "Chef de département" or current_user.role.role == "Chef de Service" or current_user.role.role == "Agent" or current_user.role.role == "Support Qualité" %}
+                      <a href="{{ url_for('gestion_profils',id=role.id)}}">
                         <button class="btn btn-xs btn-secondary"><i data-feather="align-justify"></i> Détails</button>
-                      {% else %}
-                        <button class="btn btn-xs btn-secondary"><i data-feather="align-justify" disabled></i> Détails</button>
+                      </a>
                       {% endif %}
                     </div><!-- card-footer -->
                   </div><!-- card -->

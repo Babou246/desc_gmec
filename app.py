@@ -42,6 +42,7 @@ from flask_mail import Mail, Message
 from email.mime.multipart import MIMEMultipart
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_paginate import Pagination, get_page_parameter
+from datetime import datetime
 
 # Configuration 
 
@@ -54,8 +55,9 @@ bcrypt = Bcrypt()
 
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_USERNAME'] = 'diopabubakr79@gmail.com'
-app.config['MAIL_PASSWORD'] = 'mjlokyqorvlrzqud'
+app.config['MAIL_USERNAME'] = 'snorange2021@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'mjlokyqorvlrzqud'
+app.config['MAIL_PASSWORD'] = 'nepeeigsxzhbtwgb'
 app.config['MAIL_DEBUG'] = True
 app.config['MAIL_PORT'] =465
 app.config['MAIL_USE_SSL'] = True
@@ -144,6 +146,19 @@ def envoi_agent(user_id, confirm):
     msg.body = body
     mail.send(msg)
 
+def send_validation_reminder_email(defaut):
+    subject ="Les enfants je voulais vous avertir KKKKKKKKKKKKKKKKKK"
+    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[defaut.user_email])
+    msg.body = "Veuillez valider votre défaut."
+    # Envoyer l'e-mail
+    mail.send(msg)
+
+def schedule_validation_reminder_emails():
+    defauts = TypeDefaut.get_defauts_to_remind()
+
+    for defaut in defauts:
+        send_validation_reminder_email(defaut)
+        defaut.set_last_reminder_date(datetime.now().date())
 
 def envoi_n_plus_one(user_id, confirm):
     if confirm == "OUI":
@@ -202,10 +217,19 @@ def home():
 @app.route("/sonatel-gmec/profils", methods=['POST','GET'])
 @login_required
 def profils():
-    dim = date.today() 
-    date_saisi= dim.strftime('%d-%m-%Y') 
     role = Role.query.all()
-    return render_template('pages/profils.html', role=role) 
+    users_by_role = User.query.filter(User.role_id == current_user.role_id).all()
+    return render_template('pages/profils.html', role=role, users_by_role=users_by_role)
+
+
+
+@app.route("/gestion_profils/<int:id>", methods=['POST','GET'])
+@login_required
+
+def gestion_profils(id):
+    role = User.query.filter(User.role_id == id).all()
+    return render_template('gestion_profils.html', role=role)
+
 
 
 @app.route('/sonatel-gmec/profile_modif/<string:id>', methods=['POST'])
@@ -538,7 +562,7 @@ def parametrage_defauts():
         user_session = session['_user_id']
         type_defaut = request.form.get('type_defaut')
         description_defaut = request.form.get('description_defaut')
-        confirm = request.form.get('oui')
+        # confirm = request.form.get('oui')
         date_debut = request.form.get('date_debut')
         date_fin = None  # La date de fin est initialisée à None
         commentaires = request.form.get('commentaires')
@@ -547,11 +571,11 @@ def parametrage_defauts():
         evaluer = request.form.get('evaluer')
         n1 = request.form.get('n1')
 
-        print('confirmation >>>>>',confirm)
+        # print('confirmation >>>>>',confirm)
         listes = []
         for user in user:
             if email_concerne == user.email:
-                user_id = user.email
+                user_email = user.email
                 service= user.service.nom
                 # listes.append({'code':code, 'description':description_defaut,'type_default':type_defaut,'commentaires':commentaires,'validation':validation,'service':service})
                 # print("PPPPPPPPPPPPPPPPPPPPP==> ",listes)
@@ -569,10 +593,10 @@ def parametrage_defauts():
             code = code,
             type_defaut=type_defaut,
             description_defaut=description_defaut,
-            confirm=confirm,
+            confirm="NON",
             date_debut=date_debut,
             date_fin=date_fin,
-            user_id=user_id,
+            user_email=user_email,
             commentaires=commentaires,
             validation=validation,
             service=service,
@@ -593,30 +617,39 @@ def parametrage_defauts():
 def modifier_defaut(defaut_id):
     
     defaut = TypeDefaut.query.get(defaut_id)
+    user_email = User.query.filter_by(email=defaut.user_email).first()
+    print('4444444444444',user_email)
 
     if request.method == 'POST':
         confirm = request.form.get('OUI')
 
         print(">>>>>>>>>>", confirm)
         if confirm:
-            defaut.confirm = confirm
-            db.session.commit()
+
+            if confirm:
+                defauts = TypeDefaut.query.filter_by(user_email=user_email.email,date_debut=defaut.date_debut).all()
+                for defaut in defauts:
+                    defaut.confirm = confirm
+                db.session.commit()
 
             if confirm == "OUI":
                 subject = 'Confirmation de votre N+1'
-                body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {defaut.user_id}"
+                body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {defaut.user_email}"
             else:
                 subject = 'Contestation des défauts'
-                body = f"Le défaut de traitement imputé à {defaut.user_id} a été contesté et soumis à votre N+1 pour confirmation."
+                body = f"Le défaut de traitement imputé à {defaut.user_email} a été contesté et soumis à votre N+1 pour confirmation."
+
+                # send_validation_reminder_email(defauts)
+                schedule_validation_reminder_emails()
 
             msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
             msg.body = body
             mail.send(msg)
 
             # On notifie lagent et son N+1
-            # envoi_agent(defaut.user_id, confirm)
+            # envoi_agent(defaut.user_email, confirm)
             envoi_agent('diopb4826@gmail.com', confirm)
-            envoi_n_plus_one(defaut.user_id, confirm)
+            envoi_n_plus_one(defaut.user_email, confirm)
 
 
         elif request.form.get('description_defaut') or request.form.get('date_fin') or request.form.get('type_defaut') or request.form.get('commentaires') or request.form.get('validation') or request.form.get('evaluer') or request.form.get('n1'):
@@ -882,10 +915,10 @@ def chargement_tickets():
                                 msg.body = body
                                 mail.send(msg)
                         
-                    send_daily_reminder_email()
+                    # send_daily_reminder_email()
                             
                         # flash("E-mails de rejet envoyés avec succès",'success')
-                    # db.session.commit()
+                    db.session.commit()
 
 
                     flash("Le chargement des tickets a été validé avec succès.", 'success')
@@ -899,6 +932,7 @@ def chargement_tickets():
         return redirect(url_for('chargement_tickets'))
     return render_template('chargement_tickets.html')
 
+
 @app.route('/sonatel-gmec/details_tickets')
 @login_required
 def details_tickets():
@@ -909,8 +943,11 @@ def details_tickets():
     file_list = glob.glob(os.path.join(folder_path, 'rejected_records_*.csv'))
     file_list.sort(key=os.path.getmtime)
 
-    latest_file = file_list[-1]
+    if not file_list:
+        # Gérer le cas où la liste est vide, par exemple, renvoyer une erreur ou un message approprié
+        return "Aucun fichier trouvé dans le répertoire"
 
+    latest_file = file_list[-1] 
     df = pd.read_csv(latest_file)
     page = request.args.get(get_page_parameter(), type=int, default=1)
     per_page = 10  # Nombre de lignes par page
@@ -923,8 +960,7 @@ def details_tickets():
     end = start + per_page
     paginated_data = df.iloc[start:end]
 
-    # print(df.head())
-    return render_template('details_tickets.html',df=df,paginated_data=paginated_data, pagination=pagination)
+    return render_template('details_tickets.html', df=df, paginated_data=paginated_data, pagination=pagination)
 
 
 @app.route('/traitement-ec', methods=['GET', 'POST'])
