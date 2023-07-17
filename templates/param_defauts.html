@@ -1,0 +1,614 @@
+{% extends "pages/index.html" %}
+{% block content %}
+{% block title %}
+<title>Paramétrage des types de défauts</title>
+{% endblock %}
+
+<body>
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-danger" id="flash-message">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <!-- Bouton pour ouvrir le modal -->
+        {% if current_user.role.role == "Chef de département" %}
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Faire un type de defaut</button>
+        {% else %}
+        {% endif %}
+
+        <h2>Liste des défauts paramétrés:</h2>
+
+        <table class="table table-striped mb-0 table-grid" id="tableGrid3">
+            <thead>
+                <tr>
+                    <th>﻿N° de demande</th>
+                    <th>Enregistré le</th>
+                    <th>Date de résolution</th>
+                    <th>Libellé du Service (complet)</th>
+                    <th>XX_AGENT_RESPONSABLE</th>
+                    <th>Demandeur</th>
+                    {% if current_user.role.role == "Agent" %}
+                    {% else %}
+                    <th>Confirmation</th>
+                    {% endif %}
+                    {% if current_user.role.role == "Chef de département" %}
+                    {% else %}
+                    <th>Action</th>
+                    {% endif %}
+                    <th>Infos</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for defaut in tickets %}
+                    {% if current_user.role.role == "Agent" and  current_user.nom_abrege == defaut.xx_agent_responsable%}
+                    
+                    <tr>
+                        <td>{{ defaut.numero_demande }}</td>
+                        <td>{{ defaut.enregistre_le }}</td>
+                        <td>{{ defaut.date_resolution }}</td>
+                        <td>{{ defaut.libelle_service }}</td>
+                        <td>{{ defaut.xx_agent_responsable }}</td>
+                        <td>{{ defaut.demandeur }}</td>
+                        
+                        
+                        {% if defaut.confirm == "OUI" %}
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}" style="background-color: #f1f1f1;color: #999999;pointer-events: none;">Modifier</a>
+                            </td>
+                        {% else %}
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}">Modifier</a>
+                            </td>
+                        {% endif %}
+                        
+                        <div class="modal fade" id="modifierModal{{ defaut.id }}" tabindex="-1" aria-labelledby="modifierModalLabel{{ defaut.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-xl">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modifierModalLabel{{ defaut.id }}">Modifier le défaut</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="{{ url_for('modif_param', id=defaut.id) }}">
+                                            
+                                            <label for="type_defaut">Type de défaut:</label>
+                                            <select class="form-control" name="type_description_defaut" id="type-description-select">
+                                                {% for type_defaut in types_defaut %}
+                                                    <option value="{{ type_defaut.type_defaut }}" {% if defaut.type_description_defaut == type_defaut.type_defaut %}selected{% endif %}>{{ type_defaut.type_defaut }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <script>
+                                                // Sélectionner la balise select par son ID
+                                                var select = document.getElementById('type-description-select');
+                                                
+                                                // Ajouter un écouteur d'événement "change"
+                                                select.addEventListener('change', function() {
+                                                    var newValue = select.value;
+                                                    fetch('/update-type-description', {
+                                                        method: 'POST',
+                                                        body: JSON.stringify({ newValue: newValue }),
+                                                        headers: {
+                                                            'Content-Type': 'application/json'
+                                                        }
+                                                    })
+                                                    .then(response => {
+                                                    })
+                                                    .catch(error => {
+                                                    });
+                                                });
+                                            </script>
+                                            
+                                            <br>
+                                            
+                                            <div class="row">
+                                                <div class="col-sm-6">
+
+                                                    <label for="description_defaut">Libellé Service:</label>
+                                                    <input class="form-control" name="libelle" value="{{ defaut.libelle_service }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+
+                                                    <label for="description_defaut">Defaut:</label>
+                                                    <input class="form-control" name="defaut" value="{{ defaut.defaut }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+
+                                                    <label for="description_defaut">Saisi par :</label>
+                                                    <input class="form-control" name="saisi" value="{{ defaut.saisi_par }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label for="description_defaut">Demandeur :</label>
+                                                    <input class="form-control" name="demandeur" value="{{ defaut.demandeur }}">
+                                                    <br>
+
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    
+                                                    <label for="description_defaut">Description du défaut: </label>
+                                                    <textarea class="form-control" name="description" rows="5" cols="50">{{ defaut.description }}</textarea>
+                                                    <br>
+            
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    
+                                                    <label for="description_defaut">Résolution du défaut:</label>
+                                                    <textarea class="form-control" name="resolution_defaut" rows="5" cols="50">{{ defaut.resolution }}</textarea>
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+
+                                                    <label for="description_defaut">Origine Demande :</label>
+                                                    <input class="form-control" name="origine" value="{{ defaut.origine_demande }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    
+                                                    <label for="description_defaut">Agent Responsable:</label>
+                                                    <input class="form-control" name="agent_responsable" value="{{ defaut.xx_agent_responsable }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    
+                                                    <label for="description_defaut">Agent Refus:</label>
+                                                    <input class="form-control" name="agent_refus" value="{{ defaut.xx_agent_refus }}">
+                                                    <br>
+                                                </div>
+                                                <div class="col-sm-6">
+            
+                                                    <label for="description_defaut">Type Echeant:</label>
+                                                    <input class="form-control" name="type_echeant" value="{{ defaut.type_echant }}">
+                                                    <br>
+                                                    
+                                                </div>
+                                                <!-- <div class="col-sm">
+                                                    <label for="">Description defaut :</label>
+                                                    <textarea class="form-control" name="commentaires" rows="5" cols="50">{{ defaut.type.description }}</textarea>
+                                                    <br>
+                                                </div> -->
+                                                
+                                                <!-- <label for="description_defaut">Type_id :</label>
+                                                <input class="form-control" name="type" value="{{ defaut.type_id }}">
+                                                <br> -->
+                                                <!-- 
+                                                    <div class="col-sm">
+                                                    <label for="description_defaut">description_du_defaut : {{ defaut.type.description }}</label>
+                                                    {% if defaut.type.type_defaut == "Erreur de QUALIFICATION" %}
+                                                        <select name="description_du_defaut" id="" value="{{ defaut.type.description }}"">
+                                                                <option >{{ defaut.type.description }}</option>
+                                                            </select>
+                                                    {% elif defaut.type.type_defaut == "Erreur de TRAITEMENT" %}                                                                                                           
+                                                        <select name="description_du_defaut" id="" value="{{ defaut.description }}">
+                                                                <option >{{ defaut.type.description }}</option>
+                                                        </select>
+                                                    {% endif %}
+                                                    <br>
+                                                </div>
+                                                 -->
+                                                 <!-- <div class="col-sm">
+                                                    <label for="description_defaut">description_du_defautJJJJJJJJJJJJJJJJJJJJJJJJ :</label>
+                                                    <select class="form-control" name="description_du_defaut">
+                                                        {% for type in types_defaut %}
+                                                            <option value="{{ type.id }}" {% if defaut.type_id == type.id %} selected {% endif %}>{{ type.description }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div> -->
+                                                <div class="col-sm">
+                                                    <label for="description_defaut">description_du_defaut :</label>
+                                                    <select class="form-control" name="description_du_defaut" id="description-select">
+                                                        {% for type_defaut in types_defaut %}
+                                                            <option value="{{ type_defaut.description }}" {% if defaut.description_du_defaut in type_defaut.description %}selected{% endif %}>{{ type_defaut.description }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    
+                                                </div>
+                                                <!--  -->
+                                                <script>
+                                                    // Sélectionner la balise select par son ID
+                                                    var select = document.getElementById('description-select');
+                                                    
+                                                    // Ajouter un écouteur d'événement "change"
+                                                    select.addEventListener('change', function() {
+                                                        var newValues = select.value;
+                                                        fetch('/update-description', {
+                                                            method: 'POST',
+                                                            body: JSON.stringify({ newValues: newValues }),
+                                                            headers: {
+                                                                'Content-Type': 'application/json'
+                                                            }
+                                                        })
+                                                        .then(response => {
+                                                        })
+                                                        .catch(error => {
+                                                        });
+                                                    });
+                                                </script>
+
+
+                                                
+                                            </div>
+                                            <br>
+                                           
+                                            <label for="">Commentaires</label>
+                                            <textarea class="form-control" name="commentaires" rows="5" cols="50">{{ defaut.commentaires }}</textarea>
+                                            <br>
+                                            <label for="validation{{ defaut.id }}">Validations:</label>
+                                            <script>
+                                                function afficherChampsCommentaires{{ defaut.id }}() {
+                                                    var selectElement = document.getElementById('validationSelect{{ defaut.id }}');
+                                                    var commentaireEvaluerDiv = document.getElementById('commentaireEvaluerDiv{{ defaut.id }}');
+                                                    var commentaireEvaluerInput = document.getElementById('commentaireEvaluerInput{{ defaut.id }}');
+                                                    var commentaireNPlusUnDiv = document.getElementById('commentaireNPlusUnDiv{{ defaut.id }}');
+                                                    var commentaireNPlusUnInput = document.getElementById('commentaireNPlusUnInput{{ defaut.id }}');
+                                                
+                                                    // Récupérer la valeur sélectionnée dans la liste déroulante
+                                                    var selectedValue = selectElement.value;
+                                                
+                                                    // Afficher ou masquer les champs de commentaires en fonction de la valeur sélectionnée
+                                                    if (selectedValue === 'Invalide') {
+                                                        commentaireEvaluerDiv.style.display = 'block';
+                                                        commentaireEvaluerInput.setAttribute('required', 'required');
+                                                        commentaireNPlusUnDiv.style.display = 'block';
+                                                        commentaireNPlusUnInput.setAttribute('required', 'required');
+                                                    } else {
+                                                        commentaireEvaluerDiv.style.display = 'none';
+                                                        commentaireEvaluerInput.removeAttribute('required');
+                                                        commentaireNPlusUnDiv.style.display = 'none';
+                                                        commentaireNPlusUnInput.removeAttribute('required');
+                                                    }
+                                                }
+                                            </script>
+                                            
+                                            <select name="validation" id="validationSelect{{ defaut.id }}" class="form-control" onchange="afficherChampsCommentaires{{ defaut.id }}()">
+                                                <option value="Invalide">Invalide</option>
+                                                <option value="Valide">Valide</option>
+                                            </select>
+                                            <br>
+                                            <div id="commentaireEvaluerDiv{{ defaut.id }}" style="display: none;" required>
+                                                <label for="commentaireEvaluerInput{{ defaut.id }}">Commentaire évalué (justification) <strong style="color: red;">*</strong>:</label>
+                                                <!-- <textarea class="form-control" id="commentaireEvaluerInput{{ defaut.id }}" name="evaluer" rows="5" cols="10" required>{{ defaut.commentaires_evaluer }}</textarea> -->
+                                                <input type="text" name="evaluer" value="{{ defaut.commentaires_evaluer }}" id="commentaireEvaluerInput{{ defaut.id }}" class="form-control" maxlength="200" required>
+                                            </div>
+                                            <br>
+                                            <div id="commentaireNPlusUnDiv{{ defaut.id }}" style="display: none;" required>
+                                                <label for="commentaireNPlusUnInput{{ defaut.id }}">Commentaire destiné à son N+1 <strong style="color: red;">*</strong>:</label>
+                                                <!-- <textarea class="form-control" id="commentaireNPlusUnInput{{ defaut.id }}" name="n1" rows="5" cols="10" required>{{ defaut.commentaires_n1 }}</textarea> -->
+                                                <input type="text" name="n1" value="{{ defaut.commentaires_n1 }}" id="commentaireNPlusUnInput{{ defaut.id }}" class="form-control" maxlength="200" required>
+                                            </div>
+                                            <br>
+    
+                                            <input class="btn btn-primary" type="submit" value="Valider le défaut">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <td>
+                            <a href="{{ url_for('vue',detail_paramId=defaut.id)}}">
+                                <span class="material-symbols-outlined">
+                                    info
+                                </span>
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% elif current_user.role.role == "Chef de département" %}
+                        <tr>
+                            <td>{{ defaut.numero_demande }}</td>
+                            <td>{{ defaut.enregistre_le }}</td>
+                            <td>{{ defaut.date_resolution }}</td>
+                            <td>{{ defaut.libelle_service }}</td>
+                            <td>{{ defaut.xx_agent_responsable }}</td>
+                            <td>{{ defaut.demandeur }}</td>
+                            <td>
+                                {% if defaut.confirm == "OUI" %}
+                                <a href="#" data-toggle="modal" data-target="#confirmationModal{{ defaut.id }}">
+                                    <span style="color: rgb(11, 133, 133);">OUI</span></strong>
+                                </a>
+                                {% else %}
+                                <a href="#" data-toggle="modal"
+                                    data-target="#confirmationModal{{ defaut.id }}">
+                                    <span style="color: rgb(185, 36, 10);">NON</span></strong>
+                                </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('vue',detail_paramId=defaut.id)}}">
+                                    <span class="material-symbols-outlined">
+                                        info
+                                    </span>
+                                </a>
+                            </td>
+
+                        {% for defaut in tickets %}
+
+                        <div class="modal fade" id="confirmationModal{{ defaut.id }}" tabindex="-1" role="dialog"
+                            aria-labelledby="confirmationModalLabel{{ defaut.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="confirmationModalLabel{{ defaut.id }}">Confirmation</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Voulez-vous envoyer un e-mail au concerné ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+
+                                        <form action="{{ url_for('modif_param', id=defaut.id) }}" method="post">
+                                            <input type="hidden" name="defaut_id" value="{{ defaut.confirm }}">
+                                            <label for="confirmation">Confirmation:</label>
+                                            <select name="OUI" class="form-control">
+                                                <option value="OUI">OUI</option>
+                                                <option value="NON">NON</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary">Envoyer</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        </tr>
+                    {% elif current_user.role.role == "Chef de Service" %}
+                        {% if defaut.xx_agent_responsable is not none and current_user.service.nom == defaut.xx_agent_responsable.split('_')[0] %}
+                        <tr>
+                            <td>{{ defaut.numero_demande }}</td>
+                            <td>{{ defaut.enregistre_le }}</td>
+                            <td>{{ defaut.date_resolution }}</td>
+                            <td>{{ defaut.libelle_service }}</td>
+                            <td>{{ defaut.xx_agent_responsable }}</td>
+                            <td>{{ defaut.demandeur }}</td>
+                            <td>
+                                {% if defaut.confirm == "OUI" %}
+                                <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);"
+                                    data-target="#confirmationModal{{ defaut.id }}"><span
+                                            style="color: rgb(11, 133, 133);">OUI</span></strong>
+                                </a>
+                                {% else %}
+                                <a href="#" data-toggle="modal" style="color: black;"
+                                    data-target="#confirmationModal{{ defaut.id }}"><span style="color: rgb(185, 36, 10);">NON</span></strong>
+                                </a>
+                                {% endif %}
+                            </td>
+                            
+                            {% if defaut.confirm == "OUI" %}
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}" style="background-color: #f1f1f1;color: #999999;pointer-events: none;">Modifier</a>
+                            </td>
+                            {% else %}
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}">Modifier</a>
+                            </td>
+                            {% endif %}
+                            <div class="modal fade" id="modifierModal{{ defaut.id }}" tabindex="-1" aria-labelledby="modifierModalLabel{{ defaut.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modifierModalLabel{{ defaut.id }}">Modifier le défaut</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="POST" action="{{ url_for('modif_param', id=defaut.id) }}">
+                                                
+                                                <label for="type_description_defaut">Type de défaut:</label>
+                                                <div class="col-sm">
+                                                    <label for="description_defaut">description_du_defaut :</label>
+                                                    <select class="form-control" name="description_du_defaut" id="description-select">
+                                                        {% for type_defaut in types_defaut %}
+                                                            <option value="{{ type_defaut.description }}" {% if defaut.description_du_defaut in type_defaut.description %}selected{% endif %}>{{ type_defaut.description }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    
+                                                </div>
+                                                <!--  -->
+                                                <script>
+                                                    // Sélectionner la balise select par son ID
+                                                    var select = document.getElementById('description-select');
+                                                    
+                                                    // Ajouter un écouteur d'événement "change"
+                                                    select.addEventListener('change', function() {
+                                                        var newValues = select.value;
+                                                        fetch('/update-description', {
+                                                            method: 'POST',
+                                                            body: JSON.stringify({ newValues: newValues }),
+                                                            headers: {
+                                                                'Content-Type': 'application/json'
+                                                            }
+                                                        })
+                                                        .then(response => {
+                                                        })
+                                                        .catch(error => {
+                                                        });
+                                                    });
+                                                </script>
+                                                
+                                                
+                                                
+                                                <br>
+                                                
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+
+                                                        <label for="description_defaut">Libellé Service:</label>
+                                                        <input class="form-control" name="libelle" value="{{ defaut.libelle_service }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+
+                                                        <label for="description_defaut">Defaut:</label>
+                                                        <input class="form-control" name="defaut" value="{{ defaut.defaut }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+
+                                                        <label for="description_defaut">Saisi par :</label>
+                                                        <input class="form-control" name="saisi" value="{{ defaut.saisi_par }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label for="description_defaut">Demandeur :</label>
+                                                        <input class="form-control" name="demandeur" value="{{ defaut.demandeur }}">
+                                                        <br>
+
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        
+                                                        <label for="description_defaut">Description du défaut:</label>
+                                                        <textarea class="form-control" name="description" rows="5" cols="50">{{ defaut.description }}</textarea>
+                                                        <br>
+                
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        
+                                                        <label for="description_defaut">Résolution du défaut:</label>
+                                                        <textarea class="form-control" name="resolution_defaut" rows="5" cols="50">{{ defaut.resolution }}</textarea>
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+
+                                                        <label for="description_defaut">Origine Demande :</label>
+                                                        <input class="form-control" name="origine" value="{{ defaut.origine_demande }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        
+                                                        <label for="description_defaut">Agent Responsable:</label>
+                                                        <input class="form-control" name="agent_responsable" value="{{ defaut.xx_agent_responsable }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        
+                                                        <label for="description_defaut">Agent Refus:</label>
+                                                        <input class="form-control" name="agent_refus" value="{{ defaut.xx_agent_refus }}">
+                                                        <br>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                
+                                                        <label for="description_defaut">Type Echeant:</label>
+                                                        <input class="form-control" name="type_echeant" value="{{ defaut.type_echant }}">
+                                                        
+                                                        <br>
+                                                        
+                                                    </div>
+                                                    
+                                                    <!-- <div class="col-sm">
+                                                        <label for="description_defaut">Type_id :</label>
+                                                        <input class="form-control" name="type" id="type-id-input" value="{{ defaut.type_id }}">
+                                                        <select name="type" id="">
+                                                            <option value="1"></option>
+                                                        </select>
+                                                        <br>
+                                                    </div> -->
+                                                    
+                                                    <div class="col-sm">
+                                                        <label for="description_defaut">description_du_defaut :</label>
+                                                        <select class="form-control" name="description_du_defaut" id="description-select">
+                                                            {% for type_defaut in types %}
+                                                                {% if defaut.type_id == type_defaut.id %}
+                                                                    <option value="{{ type_defaut.id }}" selected>{{ type_defaut.description }}</option>
+                                                                {% else %}
+                                                                    <option value="{{ type_defaut.id }}">{{ type_defaut.description }}</option>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <!--  -->
+                                                    <script>
+                                                        // Sélectionner la balise select par son ID
+                                                        var select = document.getElementById('description-select');
+                                                        
+                                                        // Ajouter un écouteur d'événement "change"
+                                                        select.addEventListener('change', function() {
+                                                            var newValues = select.value;
+                                                            fetch('/update-description', {
+                                                                method: 'POST',
+                                                                body: JSON.stringify({ newValues: newValues }),
+                                                                headers: {
+                                                                    'Content-Type': 'application/json'
+                                                                }
+                                                            })
+                                                            .then(response => {
+                                                            })
+                                                            .catch(error => {
+                                                            });
+                                                        });
+                                                    </script>
+                                                    <!--  -->
+                                                    
+                                                    
+                                                </div>
+                                                <br>
+                                               
+                                                <label for="">Commentaires</label>
+                                                <textarea class="form-control" name="commentaires" rows="5" cols="50">{{ defaut.commentaires }}</textarea>
+                                                <br>
+        
+                                                <input class="btn btn-primary" type="submit" value="Valider le défaut">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <td>    
+                                <a href="{{ url_for('vue',detail_paramId=defaut.id)}}">
+                                    <span class="material-symbols-outlined">
+                                        info
+                                    </span>
+                                </a>
+                            </td>
+                            {% for defaut in tickets %}
+                                <div class="modal fade" id="confirmationModal{{ defaut.id }}" tabindex="-1" role="dialog"
+                                    aria-labelledby="confirmationModalLabel{{ defaut.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="confirmationModalLabel{{ defaut.id }}">Confirmation</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Voulez-vous envoyer un e-mail au concerné ?</p>
+                                            </div>
+                                            <div class="modal-footer">
+
+                                                <form action="{{ url_for('modif_param', id=defaut.id) }}" method="post">
+                                                    <input type="hidden" name="defaut_id" value="{{ defaut.confirm }}">
+                                                    <label for="confirmation">Confirmation:</label>
+                                                    <select name="OUI" class="form-control">
+                                                        <option value="OUI">OUI</option>
+                                                        <option value="NON">NON</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                                <!-- Modal -->
+                
+                {% endfor %}
+            </tbody>
+        </table>
+        <br><br>
+        <script>
+            $(document).ready(function() {
+                $('#tableGrid3').DataTable();
+            });
+        </script>
+
+    </div>
+    {% endblock %}

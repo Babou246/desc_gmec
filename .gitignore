@@ -1,0 +1,8 @@
+uploads/
+env/
+tableau_*
+testUnique.ipynb
+backup*
+*backup
+__pycache__/
+files_rejet/

@@ -1,87 +1,64 @@
-  {% block css %}{% endblock css %}
+{% block css %}{% endblock css %}
 
-  {% extends 'pages/index.html' %}
+{% extends 'pages/index.html' %}
 
-  {% block content %}
+{% block content %}
 
-  <div class="container">
-    <ol class="breadcrumb df-breadcrumbs mg-b-10">
-      <li class="breadcrumb-item"><a href="#">Administration</a></li>
+<div class="container">
+  <ol class="breadcrumb df-breadcrumbs mg-b-10">
+    <li class="breadcrumb-item"><a href="#">Administration</a></li>
 
-      <li class="breadcrumb-item active" aria-current="page">Utilisateurs</li>
-    </ol>
+    <li class="breadcrumb-item active" aria-current="page">Utilisateurs</li>
+  </ol>
 
-    <h4 id="section2" class="mg-b-10">Historiques</h4>
-    <p class="mg-b-30">Responsive is an extension for DataTables that resolves that problem by optimising the table's
-      layout for different screen sizes through the dynamic insertion and removal of columns from the table.</p>
+  <h4 id="section2" class="mg-b-10">Historiques</h4>
+  <p class="mg-b-30">Responsive is an extension for DataTables that resolves that problem by optimising the table's
+    layout for different screen sizes through the dynamic insertion and removal of columns from the table.</p>
 
-    <div class="df-example demo-table">
-      <table id="example2" class="table">
-        <thead>
-          <tr>
-            <th class="wd-20p  text-white" style="background-color: #343640 ;">Prénom</th>
-            <th class="wd-20p  text-white" style="background-color: #343640 ;">Nom</th>
-            <th class="wd-20p  text-white" style="background-color: #343640 ;">Service</th>
-            <th class="wd-20p  text-white" style="background-color: #343640 ;">Date de debut</th>
-            <th class="wd-20p  text-white" style="background-color: #343640 ;">Role</th>
-            <th class="wd-25p text-white" style="background-color: #343640 ;">Nom de l'ancien Service</th>
-            <th class="wd-25p text-white" style="background-color: #343640 ;">Nouveau Service</th>
-            <th class="wd-25p text-white" style="background-color: #343640 ;">Date de Transition</th>
+  <div class="df-example demo-table">
+    <table id="example2" class="table">
+      <thead>
+        <tr>
+          <th class="wd-20p  text-white" style="background-color: #343640 ;">Prénom</th>
+          <th class="wd-20p  text-white" style="background-color: #343640 ;">Nom</th>
+          <th class="wd-20p  text-white" style="background-color: #343640 ;">Service</th>
+          <th class="wd-20p  text-white" style="background-color: #343640 ;">Date de debut</th>
+          <th class="wd-20p  text-white" style="background-color: #343640 ;">Role</th>
+          <th class="wd-25p text-white" style="background-color: #343640 ;">Nom de l'ancien Service</th>
+          <th class="wd-25p text-white" style="background-color: #343640 ;">Nouveau Service</th>
+          <th class="wd-25p text-white" style="background-color: #343640 ;">Date de Transition</th>
 
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in user_historique.items %}
-          <tr>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in user_historique %}
+        <tr>
 
-            <td>{{ user.user.prenom }}</td>
-            <td>{{ user.user.nom }}</td>
-            <td>{{ user.user.service.nom }}</td>
-            <td>{{ user.user.date_debut }}</td>
-            <td>{{ user.user.role.role }}</td>
-            <td>{% if user.old_service_id == 1 %} ISGTR {% elif user.old_service_id == 2 %}ISCL
-              {% elif user.old_service_id == 3 %}CDS
-              {% elif user.old_service_id == 4 %}ISCC{% elif user.old_service_id == 5 %}ISREC{% elif user.old_service_id == 6 %}ISFAC{% elif user.old_service_id == 7 %}
-              ISGRC{% elif user.old_service_id == 8 %}ISDC{% endif %} </td>
-            <td>{% if user.new_service_id == 1 %} ISGTR {% elif user.new_service_id == 2 %}ISCL
-              {% elif user.new_service_id == 3 %}CDS
-              {% elif user.new_service_id == 4 %}ISCC{% elif user.new_service_id == 5 %}ISREC{% elif user.new_service_id == 6 %}ISFAC{% elif user.new_service_id == 7 %}
-              ISGRC{% elif user.new_service_id == 8 %}ISDC{% endif %} </td>
-            <td>{{ user.transition_date }}</td>
-            {% endfor %}
-          </tr>
-        </tbody>
-      </table>
+          <td>{{ user.user.prenom }}</td>
+          <td>{{ user.user.nom }}</td>
+          <td>{{ user.user.service.nom }}</td>
+          <td>{{ user.user.date_debut }}</td>
+          <td>{{ user.user.role.role }}</td>
+          <td>{% if user.old_service_id == 1 %} ISGTR {% elif user.old_service_id == 2 %}ISCL
+            {% elif user.old_service_id == 3 %}CDS
+            {% elif user.old_service_id == 4 %}ISCC{% elif user.old_service_id == 5 %}ISREC{% elif user.old_service_id == 6 %}ISFAC{% elif user.old_service_id == 7 %}
+            ISGRC{% elif user.old_service_id == 8 %}ISDC{% endif %} </td>
+          <td>{% if user.new_service_id == 1 %} ISGTR {% elif user.new_service_id == 2 %}ISCL
+            {% elif user.new_service_id == 3 %}CDS
+            {% elif user.new_service_id == 4 %}ISCC{% elif user.new_service_id == 5 %}ISREC{% elif user.new_service_id == 6 %}ISFAC{% elif user.new_service_id == 7 %}
+            ISGRC{% elif user.new_service_id == 8 %}ISDC{% endif %} </td>
+          <td>{{ user.transition_date }}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
 
-      <!-- Affichage de la pagination -->
-      <!-- Affichage de la pagination avec style Bootstrap -->
+  </div><!-- df-example -->
+  
+</div><!-- container -->
 
-    </div><!-- df-example -->
-    <nav aria-label="Pagination">
-      <ul class="pagination justify-content-center">
-        {% for page_num in user_historique.iter_pages() %}
-        {% if page_num %}
-        {% if user_historique.page == page_num %}
-        <li class="page-item active" aria-current="page">
-          <span class="page-link">{{ page_num }}</span>
-        </li>
-        {% else %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('users', page=page_num) }}">{{ page_num }}</a>
-        </li>
-        {% endif %}
-        {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">...</span>
-        </li>
-        {% endif %}
-        {% endfor %}
-      </ul>
-    </nav>
-  </div><!-- container -->
+{% endblock content %}
 
-  {% endblock content %}
+</body>
 
-  </body>
-
-  </html>
+</html>

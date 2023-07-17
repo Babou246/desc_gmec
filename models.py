@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, redirect, url_for, flash
 # from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import check_password_hash, generate_password_hash,Bcrypt
-from flask_login import UserMixin
+from flask_login import UserMixin,current_user
 from enum import Enum
 from sqlalchemy import Enum as SQLAlchemyEnum
 import random
@@ -131,6 +131,7 @@ class TypeDefaut(db.Model):
         if code:
             code = random.getrandbits(14)+random.randint(112,666)+1
         return 'code_'+str(code)
+        
     
     @staticmethod
     def get_defauts_by_user_email(email):
@@ -172,12 +173,12 @@ class Ticket(db.Model):
     sla = db.Column(db.String(10))
     nom_abrege_agent = db.Column(db.String(300))
     type_echant = db.Column(db.String(30))
-    defaut = db.Column(db.String(10))
+    defaut = db.Column(db.String(100))
     type_defaut = db.Column(db.TEXT)
     description_defaut = db.Column(db.String(800))
     commentaires_defaut = db.Column(db.String(400))
     periode = db.Column(db.String(100))
-    evaluateur = db.Column(db.String(30))
+    evaluateur = db.Column(db.String(40))
 
 
 class Fichier(db.Model):
@@ -229,11 +230,14 @@ class Fichier(db.Model):
     xx_dep_traitant = db.Column(db.String(200))
     xx_direction = db.Column(db.String(200))
     xx_agent_refus = db.Column(db.String(200))
+    confirm = db.Column(db.String(20))
     numero = db.Column(db.String(100))
     type_echant = db.Column(db.String(200))
     defaut = db.Column(db.String(200))
     type_description_defaut = db.Column(db.String(100))
-    description_du_defaut = db.Column(db.String(200))
+    description_du_defaut = db.Column(db.String(255))
+    type_id = db.Column(db.Integer, db.ForeignKey('type.id'))
+    type = db.relationship('Type', backref='fichiers')
     commentaires = db.Column(db.String(2000))
     note_defaut = db.Column(db.String(10))
     agent_escalade = db.Column(db.String(200))
@@ -263,12 +267,19 @@ class Fichier_charger(db.Model):
         self.nom = nom
         self.user_id = user_id
 
+class Type(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type_defaut = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.TEXT, nullable=False)
 
+    def __init__(self,type_defaut, description):
+        self.type_defaut = type_defaut
+        self.description = description
     
 class Corbeille(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     matricule = db.Column(db.String(10), nullable=False)
-    login = db.Column(db.String(30), nullable=False, unique=True)
+    login = db.Column(db.String(30), nullable=False)
     prenom = db.Column(db.String(30), nullable=False)
     nom = db.Column(db.String(30), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
@@ -332,3 +343,48 @@ class UserServiceHistory(db.Model):
     user = db.relationship("User", backref="service_history")
     old_service = db.relationship("Service", foreign_keys=[old_service_id])
     new_service = db.relationship("Service", foreign_keys=[new_service_id])
+
+
+
+class Transaction(db.Model):
+    __tablename__ = 'transaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    users_transac = db.Column(db.String(255), nullable=False)
+    nom_transac = db.Column(db.String(255), nullable=False)
+    heure = db.Column(db.DateTime, nullable=False, default=datetime.now)
+
+    def __init__(self, users_transac, nom_transac):
+        self.users_transac = users_transac
+        self.nom_transac = nom_transac
+    
+    @staticmethod
+    def get_transactions(page=1, per_page=10):
+        if current_user.role.role == 'Chef de département':
+            query = Transaction.query.order_by(Transaction.heure.desc())
+        else:
+            query = Transaction.query.filter_by(users_transac=current_user.login).order_by(Transaction.heure.desc())
+        transactions_pagination = query.paginate(page=page, per_page=per_page)
+        return transactions_pagination
+
+    @classmethod
+    def truncate(cls):
+        db.session.query(cls).delete()
+        db.session.commit()
+
+    
+    @classmethod
+    def annuler(cls):
+        try:
+            # Commencer une transaction
+            db.session.begin()
+
+            # Effectuer des opérations de rollback spécifiques ici
+            # Par exemple, restaurer les enregistrements supprimés
+
+            # Annuler la transaction
+            db.session.rollback()
+
+        except SQLAlchemyError as e:
+            # En cas d'erreur, imprimer le message d'erreur ou effectuer d'autres opérations de gestion des erreurs
+            print("Erreur lors de l'annulation de la transaction :", str(e))

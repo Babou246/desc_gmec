@@ -51,12 +51,36 @@
   <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: rgb(255, 94, 0);">
+        <div class="modal-header" style="background-color: rgb(38, 245, 31);">
           <h5 class="modal-title" id="messageModalLabel">Details sur le chargement des Tickets</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <center>
+          <center><div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header" style="background-color: rgb(255, 94, 0);">
+                  <h5 class="modal-title" id="messageModalLabel">Détails sur le chargement des Tickets</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <center>
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="alert alert-custom" id="flash-message">
+                      <strong>{{ messages[0] }}</strong> <br><br><br>
+                      <strong>{{ messages[1] }}</strong> <br><br><br>
+                      <a href="{{ url_for('details_tickets') }}"><strong>{{ messages[2] }}</strong></a> <br><br><br>
+                    </div>
+                    <strong>{{ messages[3] }}</strong> <br><br><br>
+                    {% endif %}
+                    {% endwith %}
+                  </center>
+                </div>
+              </div>
+            </div>
+          </div>
+          
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             <div class="alert alert-custom" id="flash-message">

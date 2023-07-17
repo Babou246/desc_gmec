@@ -36,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for user in corbeille_pagination.items %}
+          {% for user in corbeille_pagination %}
           <tr>
             <td>{{ user.prenom }}</td>
             <td>{{ user.nom }}</td>
@@ -50,12 +50,12 @@
             <td>{{ user.date_fin }}</td>
             {% if current_user.role.role == "Chef de département"%}
             <td>
-              <!-- <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
+              <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
                 <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
-                  data-bs-placement="top" title="Modifier">
+                  data-bs-placement="top" title="Restaurer">
                   <i class="ri-edit-line fs-11 lh-1"></i>
                 </button>
-              </a> -->
+              </a>
 
               <a href="{{ url_for('delete_dans_cor',user_id=user.id) }}"
                 onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} definitivement dans nos base de données : ?')"
@@ -71,32 +71,7 @@
         </tbody>
       </table>
 
-      <!-- Affichage de la pagination -->
-      <!-- Affichage de la pagination avec style Bootstrap -->
-
     </div><!-- df-example -->
-    <nav aria-label="Pagination">
-      <ul class="pagination justify-content-center">
-        {% for page_num in corbeille_pagination.iter_pages() %}
-        {% if page_num %}
-        {% if corbeille_pagination.page == page_num %}
-        <li class="page-item active" aria-current="page">
-          <span class="page-link">{{ page_num }}</span>
-        </li>
-        {% else %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('users', page=page_num) }}">{{ page_num }}</a>
-        </li>
-        {% endif %}
-        {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">...</span>
-        </li>
-        {% endif %}
-        {% endfor %}
-      </ul>
-    </nav>
-  </div><!-- container -->
   {% endblock content %}
 
 </body>

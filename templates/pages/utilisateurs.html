@@ -66,29 +66,37 @@
           </tr>
         </thead>
         <tbody>
-          {% for user in users_pagination.items %}
+          {% for user in users_pagination %}
           {% if user.date_fin and user.state == "Clocturé"%}
           <tr>
-            <td style="background-color: red;">{{ user.prenom }}</td>
-            <td style="background-color: red;">{{ user.nom }}</td>
-            <td style="background-color: red;">{{ user.sigle_service }}</td>
-            <td style="background-color: red;">{{ user.nom_abrege }}</td>
-            <td style="background-color: red;">{{ user.role.role }}</td>
-            <td style="background-color: red;">{{ user.service.nom }}</td>
-            <td style="background-color: red;">{{ user.date_debut }}</td>
-            <td style="background-color: red;">{{ user.date_fin }}</td>
-            <td style="background-color: red;">{{ user.matricule }}</td>
-            <!-- <td style="background-color: red;">{{ user.date_fin }}</td> -->
-            <td style="background-color: red;">{{ user.state }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.prenom }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.nom }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.sigle_service }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.nom_abrege }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.role.role }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.service.nom }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.date_debut }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.date_fin }}</td>
+            <td style="background-color: rgb(224, 166, 166);">{{ user.matricule }}</td>
+            <!-- <td style="background-color: rgb(224, 166, 166);">{{ user.date_fin }}</td> -->
+            <td style="background-color: rgb(224, 166, 166);">{{ user.state }}</td>
             {% if current_user.role.role == "Chef de département"%}
             <td>
+              {% if user.state == 'Clocturé' %}
+                <!-- <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}" disabled> -->
+                  <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
+                    data-bs-placement="top" title="Modifier" disabled>
+                    <i class="ri-edit-line fs-11 lh-1"></i>
+                  </button>
+                <!-- </a> -->
+              {% else %}
               <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
                 <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
                   data-bs-placement="top" title="Modifier">
                   <i class="ri-edit-line fs-11 lh-1"></i>
                 </button>
               </a>
-
+              {% endif %}
               <a href="{{ url_for('delete',user_id=user.id) }}"
                 onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} : ?')"
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Supprimer">
@@ -332,34 +340,13 @@
           {% endfor %}
         </tbody>
       </table>
-
+      
       <!-- Affichage de la pagination -->
       <!-- Affichage de la pagination avec style Bootstrap -->
 
     </div><!-- df-example -->
-    <nav aria-label="Pagination">
-      <ul class="pagination justify-content-center">
-        {% for page_num in users_pagination.iter_pages() %}
-        {% if page_num %}
-        {% if users_pagination.page == page_num %}
-        <li class="page-item active" aria-current="page">
-          <span class="page-link">{{ page_num }}</span>
-        </li>
-        {% else %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('users', page=page_num) }}">{{ page_num }}</a>
-        </li>
-        {% endif %}
-        {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">...</span>
-        </li>
-        {% endif %}
-        {% endfor %}
-      </ul>
-    </nav>
+    
   </div><!-- container -->
-  
   {% endblock content %}
 
 </body>

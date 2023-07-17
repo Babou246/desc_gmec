@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="{{ url_for('static',filename='css/custom.css') }}">
     <form action="{{ url_for('chargement_defauts') }}" method="POST" enctype="multipart/form-data">
         <input class="form-control" type="file" name="file" accept=".xlsx">
+        <br>
         <input class="form-control btn btn-primary" type="submit" value="Charger le fichier">
     </form>
 
@@ -39,7 +40,7 @@
                     <th class="wd-25p text-white" style="background-color: #343640 ;">localisation</th>
                     <th class="wd-25p text-white" style="background-color: #343640 ;">description</th>
                     <th class="wd-20p text-white" style="background-color: #343640 ;">resolution</th>
-                    <th class="wd-20p text-white" style="background-color: #343640 ;">action</th>
+                    <!-- <th class="wd-20p text-white" style="background-color: #343640 ;">action</th> -->
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +51,7 @@
                     <td>{{ user.localisation }}</td>
                     <td>{{ user.description }}</td>
                     <td>{{ user.resolution }}</td>
-                    <td>
+                    <!-- <td>
                         <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
                             <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Modifier">
@@ -66,7 +67,7 @@
                             <button type="button" class="btn btn-danger btn-sm"><i
                                     class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
                         </a>
-                    </td>
+                    </td> -->
                 </tr>   
                 {%endfor%}
         </table>

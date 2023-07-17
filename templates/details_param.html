@@ -1,0 +1,279 @@
+{% extends "pages/index.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+
+                {% for ticket in tickets %}
+                <div class="col-6">
+                    <label for="floatingInput">N° de la Demande :</label>
+                    <strong>{{ ticket.numero_demande }}</strong>
+                </div><br>
+                <div class="col-6">
+                    <label for="floatingInput">Enregistré le :</label>
+                    <strong>{{ ticket.enregistre_le }}</strong>
+
+                </div><br><br><br>
+                <div class="col-6">
+                    <label for="floatingInput">Date de résolution :</label>
+                    <strong>{{ ticket.date_resolution }}</strong>
+
+                </div>
+                <div class="col-6">
+                    <label for="floatingInput">Libellé Service :</label>
+                    <strong>{{ ticket.libelle_service }}</strong>
+                </div>
+
+                <div class="col-6">
+                    <label for="floatingInput">Demandeur :</label>
+                    <strong>{{ ticket.demandeur }}</strong>
+                </div>
+
+                <div class="col-6">
+                    <label for="floatingInput">Confirmation :</label>
+                    {% if ticket.confirm == "OUI" %}
+                    <strong style="color: rgb(55, 136, 136);">{{ ticket.confirm }}</strong>
+                    {% else %}
+                    <strong style="color: red;">{{ ticket.confirm }}</strong>
+
+                    {% endif %}
+                </div>
+
+                {% endfor %}
+            </div>
+        </div>
+    </div> <br><br>
+
+    <table class="table">
+        <thead class="table-secondary">
+            <tr>
+                <th scope="col">Origine demande</th>
+                <th scope="col">Description</th>
+                <th scope="col">Resolution</th>
+                <th scope="col">Agent Responsable</th>
+                <th scope="col">Agent Refus</th>
+                <th scope="col">Type Echeant</th>
+                <th scope="col">Defaut</th>
+                <th scope="col">Description du Type Defaut</th>
+                <th scope="col">Description Defaut</th>
+                <th scope="col">Commentaires</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.origine_demande }}</td>
+                <td>{{ ticket.description }}</td>
+                <td>{{ ticket.resolution }}</td>
+                <td>{{ ticket.xx_agent_responsable }}</td>
+                <td>{{ ticket.xx_agent_refus }}</td>
+                <td>{{ ticket.type_echant }}</td>
+                <td>{{ ticket.defaut }}</td>
+                <td>{{ ticket.type_description_defaut }}</td>
+                <td>{{ ticket.description_du_defaut }}</td>
+                <td>{{ ticket.commentaires }}</td>
+
+            </tr>
+            {% endfor %}
+            {% for ticket in tickets %}
+            {% if current_user.role.role == "Chef de département" %}
+
+            {% else %}
+            {% if ticket.confirm == "OUI" %}
+            <td>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ ticket.id }}"
+                    style="background-color: #f1f1f1;color: #999999;pointer-events: none;"><button type="button"
+                        class="btn btn-secondary">Modifier</button></a>
+            </td>
+            {% else %}
+            <td>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ ticket.id }}"><button type="button"
+                        class="btn btn-primary">Modifier</button></a>
+            </td>
+            {% endif %}
+                <div class="modal fade" id="modifierModal{{ ticket.id }}" tabindex="-1"
+                    aria-labelledby="modifierModalLabel{{ ticket.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modifierModalLabel{{ ticket.id }}">Modifier le défaut</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('modif_param', id=ticket.id) }}">
+
+                                    <label for="type_defaut">Type de défaut:</label>
+                                    
+                                    <select class="form-control" name="type_description_defaut" id="type-description-select">
+                                        {% for type_defaut in types %}
+                                            <option value="{{ type_defaut.type_defaut }}" {% if ticket.type_description_defaut == type_defaut.type_defaut %}selected{% endif %}>{{ type_defaut.type_defaut }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <script>
+                                        // Sélectionner la balise select par son ID
+                                        var select = document.getElementById('type-description-select');
+                                        
+                                        // Ajouter un écouteur d'événement "change"
+                                        select.addEventListener('change', function() {
+                                            // Récupérer la nouvelle valeur sélectionnée
+                                            var newValue = select.value;
+                                            
+                                            // Effectuer une action de mise à jour ici, comme envoyer une requête AJAX pour enregistrer la nouvelle valeur
+                                            // Vous pouvez utiliser la bibliothèque JavaScript de votre choix pour effectuer la requête AJAX, par exemple, jQuery.ajax() ou Fetch API
+                                            
+                                            // Exemple avec Fetch API
+                                            fetch('/update-type-description', {
+                                                method: 'POST',
+                                                body: JSON.stringify({ newValue: newValue }),  // Envoyer la nouvelle valeur sous forme de JSON
+                                                headers: {
+                                                    'Content-Type': 'application/json'
+                                                }
+                                            })
+                                            .then(response => {
+                                                // Gérer la réponse de la requête
+                                                // Par exemple, afficher un message de succès ou actualiser la page
+                                            })
+                                            .catch(error => {
+                                                // Gérer les erreurs de la requête
+                                            });
+                                        });
+                                    </script>
+                                    <br>
+
+                                    <div class="row">
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Libellé Service:</label>
+                                            <input class="form-control" name="libelle" value="{{ ticket.libelle_service }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Defaut:</label>
+                                            <input class="form-control" name="defaut" value="{{ ticket.defaut }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Saisi par :</label>
+                                            <input class="form-control" name="saisi" value="{{ ticket.saisi_par }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="description_defaut">Demandeur :</label>
+                                            <input class="form-control" name="demandeur" value="{{ ticket.demandeur }}">
+                                            <br>
+
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Description du défaut:</label>
+                                            <textarea class="form-control" name="description_defaut" rows="5"
+                                                cols="50">{{ ticket.type.description }}</textarea>
+                                            <br>
+
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Résolution du défaut:</label>
+                                            <textarea class="form-control" name="resolution_defaut" rows="5"
+                                                cols="50">{{ ticket.resolution }}</textarea>
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Origine Demande :</label>
+                                            <input class="form-control" name="origine" value="{{ ticket.origine_demande }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Agent Responsable:</label>
+                                            <input class="form-control" name="agent_responsable"
+                                                value="{{ ticket.xx_agent_responsable }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Agent Refus:</label>
+                                            <input class="form-control" name="agent_refus"
+                                                value="{{ ticket.xx_agent_refus }}">
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <label for="description_defaut">Type Echeant:</label>
+                                            <input class="form-control" name="type_echeant"
+                                                value="{{ ticket.type_echant }}">
+                                            <br>
+
+                                        </div>
+                                        <!-- <div class="col-sm">
+                                            <label for="description_defaut">description_du_defautJJJJJJJJJJJJJJJJJJJJJJJJ :</label>
+                                            <select class="form-control" name="description_du_defaut">
+                                                {% for type_defaut in types %}
+                                                    {% if ticket.type_id == type_defaut.id %}
+                                                        <option value="{{ type_defaut.id }}" selected>{{ type_defaut.description }}</option>
+                                                    {% else %}
+                                                        <option value="{{ type_defaut.id }}">{{ type_defaut.description }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div> -->
+
+                                        <div class="col-sm">
+                                            <label for="description_defaut">description_du_defaut :</label>
+                                            <select class="form-control" name="description_du_defaut" id="description-select">
+                                                {% for type_defaut in types %}
+                                                    <option value="{{ type_defaut.description }}" {% if ticket.description_du_defaut in type_defaut.description %}selected{% endif %}>{{ type_defaut.description }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            
+                                        </div>
+                                        <!--  -->
+                                        <script>
+                                            // Sélectionner la balise select par son ID
+                                            var select = document.getElementById('description-select');
+                                            
+                                            // Ajouter un écouteur d'événement "change"
+                                            select.addEventListener('change', function() {
+                                                var newValues = select.value;
+                                                fetch('/update-description', {
+                                                    method: 'POST',
+                                                    body: JSON.stringify({ newValues: newValues }),
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    }
+                                                })
+                                                .then(response => {
+                                                })
+                                                .catch(error => {
+                                                });
+                                            });
+                                        </script>
+                                    </div>
+                                    <br>
+                                    <label for="">Commentaires</label>
+                                    <textarea class="form-control" name="commentaires" rows="5"
+                                        cols="50">{{ ticket.commentaires }}</textarea>
+                                    <br>
+
+                                    <input class="btn btn-primary" type="submit" value="Valider le défaut">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- </div> -->
+
+    <!-- </div> -->
+    <!-- </div> -->
+</div>
+
+{% endblock %}

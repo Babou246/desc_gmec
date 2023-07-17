@@ -4,57 +4,78 @@
 {% block css %}
 
 {% endblock %}
-
 {% block content %}
     <div class="container">
-
-        <h1>Les Types de défauts</h1>
-          <!-- DEBUT -->
-
-
-          <table class="table" id="defautTable">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Les Types de défauts</h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAjouterType">
+                Ajouter un type
+            </button>
+        </div>
+        
+        <!-- Tableau des types de défauts -->
+        <table class="table" id="defautTable">
             <caption>Informations participants</caption>
             <thead class="table-dark">
-              <tr>
-                <th>ID</th>
-                <th>Description</th>
-                <th>Type</th>
-              </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                </tr>
             </thead>
             <tbody>
-              {% for defaut in defaut %}
-              <tr>
-                <td>{{ defaut.id }}</td>
-                <td>{{ defaut.description_defaut }}</td>
-                <td>{{ defaut.type_defaut }}</td>
-              </tr>
-              {% endfor %}
+                {% for defaut in defaut %}
+                    <tr>
+                        <td>{{ defaut.id }}</td>
+                        <td>{{ defaut.type_defaut }}</td>
+                        <td>{{ defaut.description }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
-          </table>
-          
-          <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-          <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-          
-          <script>
-            $(document).ready(function() {
-              $('#defautTable').DataTable({
-                "paging": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "columnDefs": [{
-                  "targets": [2],
-                  "searchable": true
-                }]
-              });
-            });
-          </script>
-          
-          
-  
-  
+        </table>
 
-          <!-- FIN -->
-          
+        <!-- Modal pour ajouter un type -->
+        <div class="modal fade" id="modalAjouterType" tabindex="-1" aria-labelledby="modalAjouterTypeLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAjouterTypeLabel">Ajouter un type de défaut</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Formulaire pour ajouter un type -->
+                        <form action="{{ url_for('ajouter_type') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="type_defaut" class="form-label">Type de défaut</label>
+                                <input type="text" class="form-control" id="type_defaut" name="type_defaut" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initialiser DataTables -->
+        <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+        <script>
+            $(document).ready(function() {
+                $('#defautTable').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "columnDefs": [{
+                        "targets": [2],
+                        "searchable": true
+                    }]
+                });
+            });
+        </script>
     </div>
 {% endblock %}
