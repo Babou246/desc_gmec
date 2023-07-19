@@ -40,6 +40,7 @@
                     <th class="wd-25p text-white" style="background-color: #343640 ;">localisation</th>
                     <th class="wd-25p text-white" style="background-color: #343640 ;">description</th>
                     <th class="wd-20p text-white" style="background-color: #343640 ;">resolution</th>
+                    <th class="wd-20p text-white" style="background-color: #343640 ;">Details</th>
                     <!-- <th class="wd-20p text-white" style="background-color: #343640 ;">action</th> -->
                 </tr>
             </thead>
@@ -51,6 +52,13 @@
                     <td>{{ user.localisation }}</td>
                     <td>{{ user.description }}</td>
                     <td>{{ user.resolution }}</td>
+                    <td>
+                        <a href="{{ url_for('tous_les_defauts',detail_paramId=user.id)}}">
+                            <span class="material-symbols-outlined">
+                                info
+                            </span>
+                        </a>
+                    </td>
                     <!-- <td>
                         <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
                             <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2"

@@ -14,12 +14,12 @@
         {% endif %}
         {% endwith %}
         <!-- Bouton pour ouvrir le modal -->
-        {% if current_user.role.role == "Chef de département" %}
+        <!-- {% if current_user.role.role == "Chef de département" %}
         <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Faire un type de defaut</button>
         {% else %}
-        {% endif %}
+        {% endif %} -->
 
-        <h2>Liste des défauts paramétrés:</h2>
+        <h2>Liste des défauts</h2>
 
         <table class="table table-striped mb-0 table-grid" id="tableGrid3">
             <thead>
@@ -31,8 +31,12 @@
                     <th>XX_AGENT_RESPONSABLE</th>
                     <th>Demandeur</th>
                     {% if current_user.role.role == "Agent" %}
+                    <th>Commentaire(N+1)</th>
                     {% else %}
                     <th>Confirmation</th>
+                    {% endif %}
+                    {% if current_user.role.role == "Chef de Service" %}
+                        <th>Commentaire évaluer</th>
                     {% endif %}
                     {% if current_user.role.role == "Chef de département" %}
                     {% else %}
@@ -53,6 +57,7 @@
                         <td>{{ defaut.libelle_service }}</td>
                         <td>{{ defaut.xx_agent_responsable }}</td>
                         <td>{{ defaut.demandeur }}</td>
+                        <td>{{ defaut.commentaires_n1 }}</td>
                         
                         
                         {% if defaut.confirm == "OUI" %}
@@ -276,11 +281,10 @@
                                                 <input type="text" name="evaluer" value="{{ defaut.commentaires_evaluer }}" id="commentaireEvaluerInput{{ defaut.id }}" class="form-control" maxlength="200" required>
                                             </div>
                                             <br>
-                                            <div id="commentaireNPlusUnDiv{{ defaut.id }}" style="display: none;" required>
+                                            <!-- <div id="commentaireNPlusUnDiv{{ defaut.id }}" style="display: none;" required>
                                                 <label for="commentaireNPlusUnInput{{ defaut.id }}">Commentaire destiné à son N+1 <strong style="color: red;">*</strong>:</label>
-                                                <!-- <textarea class="form-control" id="commentaireNPlusUnInput{{ defaut.id }}" name="n1" rows="5" cols="10" required>{{ defaut.commentaires_n1 }}</textarea> -->
                                                 <input type="text" name="n1" value="{{ defaut.commentaires_n1 }}" id="commentaireNPlusUnInput{{ defaut.id }}" class="form-control" maxlength="200" required>
-                                            </div>
+                                            </div> -->
                                             <br>
     
                                             <input class="btn btn-primary" type="submit" value="Valider le défaut">
@@ -367,6 +371,7 @@
                             <td>{{ defaut.libelle_service }}</td>
                             <td>{{ defaut.xx_agent_responsable }}</td>
                             <td>{{ defaut.demandeur }}</td>
+
                             <td>
                                 {% if defaut.confirm == "OUI" %}
                                 <a href="#" data-toggle="modal" style="color: rgb(255, 145, 0);"
@@ -379,7 +384,7 @@
                                 </a>
                                 {% endif %}
                             </td>
-                            
+                            <td>{{ defaut.commentaires_evaluer }}</td>
                             {% if defaut.confirm == "OUI" %}
                             <td>
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}" style="background-color: #f1f1f1;color: #999999;pointer-events: none;">Modifier</a>
@@ -389,6 +394,8 @@
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#modifierModal{{ defaut.id }}">Modifier</a>
                             </td>
                             {% endif %}
+                            
+                                    
                             <div class="modal fade" id="modifierModal{{ defaut.id }}" tabindex="-1" aria-labelledby="modifierModalLabel{{ defaut.id }}" aria-hidden="true">
                                 <div class="modal-dialog modal-xl">
                                     <div class="modal-content">
@@ -588,6 +595,11 @@
                                                         <option value="OUI">OUI</option>
                                                         <option value="NON">NON</option>
                                                     </select>
+                                                    <!-- <div id="commentaireNPlusUnDiv"> -->
+                                                        <label for="commentaireNPlusUnInput">Commentaire de son N+1 :</label>
+                                                        <input type="text" name="n1" value="{{ defaut.commentaires_n1 }}" id="commentaireNPlusUnInput" class="form-control" maxlength="200">
+                                                    <!-- </div> -->
+                                                    <br><br>
                                                     <button type="submit" class="btn btn-primary">Envoyer</button>
                                                 </form>
                                             </div>

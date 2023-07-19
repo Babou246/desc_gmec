@@ -19,8 +19,9 @@
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
-                    <th>Description</th>
                     <th>Type</th>
+                    <th>Description</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,6 +30,46 @@
                         <td>{{ defaut.id }}</td>
                         <td>{{ defaut.type_defaut }}</td>
                         <td>{{ defaut.description }}</td>
+                        <td class="d-flex justify-content-between">
+                            <a href="#info{{defaut.id}}" data-bs-toggle="modal" data-bs-target="#info{{defaut.id}}">
+                                <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Modifier">
+                                  <i class="ri-edit-line fs-11 lh-1"></i>
+                                </button>
+                            </a>
+                              
+                            <div class="modal fade" id="info{{defaut.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="exampleModalLabel">Type Défaut</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('modiftypedefaut',id=defaut.id) }}" method="POST">
+                                            <div class="mb-3">
+                                                <label for="type_defaut" class="form-label">Type de défaut</label>
+                                                <input type="text" class="form-control" value="{{ defaut.type_defaut }}" id="type_defaut" name="type" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Description</label>
+                                                <textarea class="form-control" id="description" name="description" rows="3" required>{{ defaut.description }}</textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Modifier</button>
+                                        </form>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                              
+                
+                            <a href="{{ url_for('delete_type',id=defaut.id )}}"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Supprimer">
+                
+                                <button type="button" class="btn btn-danger btn-sm"><i
+                                    class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

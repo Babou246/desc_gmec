@@ -122,8 +122,10 @@
         </li>
         <li class="nav-item"><a href="#" class="nav-link"><i data-feather="sliders"></i>
             <span>Qualification</span></a></li>
-        <li class="nav-item"><a href="/chargement-tickets" class="nav-link"><i data-feather="life-buoy"></i>
-            <span>Erreurs Critiques</span></a></li>
+            {% if current_user.role.role == "Chef de département" %}
+                <li class="nav-item"><a href="{{ url_for('chargement_defauts') }}" class="nav-link"><i data-feather="life-buoy"></i>
+                    <span>Defauts</span></a></li>
+            {% endif %}
 
         <li class="nav-item"><a href="/type_defaut" class="nav-link"><i data-feather="paperclip"></i>
           <span>Type Defaut</span></a></li>
@@ -187,10 +189,12 @@
               
           </div>
           <div class="d-none d-md-block">
-            <button type="button" class="btn btn-sm pd-x-15 btn-white btn-uppercase" data-toggle="modal"
-              data-target="#importModal">
-              <i data-feather="share" class="wd-10 mg-r-5"></i> Importer
-            </button>
+            {% if current_user.role.role == "Chef de département" %}
+              <button type="button" class="btn btn-sm pd-x-15 btn-white btn-uppercase" data-toggle="modal"
+                data-target="#importModal">
+                <i data-feather="share" class="wd-10 mg-r-5"></i> Importer
+              </button>
+            {% endif %}
             <button class="btn btn-sm pd-x-15 btn-white btn-uppercase mg-l-5"><i data-feather="share-2"
                 class="wd-10 mg-r-5"></i> Share</button>
             

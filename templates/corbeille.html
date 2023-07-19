@@ -50,13 +50,15 @@
             <td>{{ user.date_fin }}</td>
             {% if current_user.role.role == "Chef de département"%}
             <td>
-              <a href="#info{{user.id}}" data-bs-toggle="modal" data-target="#info{{user.id}}">
-                <button type="button" class="btn btn-secondary btn-sm align-items-center gap-2" data-bs-toggle="tooltip"
-                  data-bs-placement="top" title="Restaurer">
-                  <i class="ri-edit-line fs-11 lh-1"></i>
-                </button>
-              </a>
+              <!--  -->
+              <a href="{{ url_for('restore',user_id=user.id) }}"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Restaurer User">
 
+                  <button type="button" class="btn btn-secondary btn-sm">
+                    <i class="material-symbols-outlined">restore_from_trash</i>
+                  </button>
+              </a>
+              <!--  -->
               <a href="{{ url_for('delete_dans_cor',user_id=user.id) }}"
                 onclick="return confirm('Voulez vous supprimer {{ user.prenom }} {{ user.nom }} definitivement dans nos base de données : ?')"
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Supprimer">
@@ -64,6 +66,7 @@
                 <button type="button" class="btn btn-danger btn-sm"><i
                     class="ri-delete-bin-5-fill fs-11 lh-1"></i></button>
               </a>
+              
             </td>
           </tr>
           {% endif %}

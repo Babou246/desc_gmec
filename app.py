@@ -217,8 +217,10 @@ def home():
     return render_template('pages/menu.html')
 
 
+
+ ################################
                         ########################################################
-                        #                     Profil                           #
+#########################                     PROFILS                          #####################
                         ########################################################
 
 
@@ -287,9 +289,9 @@ def monprofil():
     user = current_user
     return render_template('pages/monprofil.html',user=user)
 
-
+################################
                         ########################################################
-                        #                     Athentication                    #
+#########################                     Athentication                    #####################
                         ########################################################
 
 
@@ -396,9 +398,9 @@ def confirm_email(token):
         return flash('<h1>The token is expired!</h1>')
     return redirect(url_for('login'))
 
-
+################################
                             ########################################################
-                            #                     Modif PWD                        #
+#############################                     SCRIPT USERS                     ######################################
                             ########################################################
 
 
@@ -448,7 +450,7 @@ def changepassword():
 
 
                                 ########################################################
-                                #                     Editer PWD                       #
+                                #                     PARTIE MODIFICATION              #
                                 ########################################################
 
 
@@ -470,7 +472,7 @@ def modifier_utilisateur(user_id):
         user.state= request.form.get('statut')
         user.nom_abrege = user.sigle_service+'_'+user.prenom
         if user.state == "Clocturé":
-            user.date_fin = datetime.now()
+            user.date_fin = datetime.datetime.now()
 
         user_session = session['login']
         nom_transac = 'modifier_utilisateur'
@@ -483,31 +485,16 @@ def modifier_utilisateur(user_id):
     return render_template('pages/utilisateurs.html', user=user)
 
 
-@app.route('/delete/<string:user_id>', methods=['GET', 'POST'])
+
+@app.route('/delete/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def delete(user_id):
     user = User.query.get(user_id)
-    corebeille = Corbeille.query.get(user_id)
-
+    cor = Corbeille.query.get(user_id)
+    print('============>',user_id)
     if user:
-        corebeille = Corbeille(
-            matricule=user.matricule,
-            login=user.login,
-            prenom=user.prenom,
-            nom=user.nom,
-            role = user.role,
-            sigle_service=user.sigle_service,
-            service_id=user.service.id,
-            role_id=user.role.id,
-            state="Clocturé",
-            email=user.email,
-            nom_abrege=user.nom_abrege,
-            date_debut=user.date_debut,
-            date_fin=datetime.now(),
-            password=user.password
-        )
-        db.session.add(corebeille)
-        db.session.delete(user)
+        user.is_active = False
+        db.session.commit()
 
         user_session = session['login']
         nom_transac = 'delete_user'
@@ -518,7 +505,9 @@ def delete(user_id):
     else:
         flash('Utilisateur introuvable.', 'error')
 
-    return render_template('pages/utilisateurs.html')
+    return redirect(url_for('users'))
+
+
 
 @app.route('/delete_dans_corbeille/<int:user_id>')
 def delete_dans_cor(user_id):
@@ -529,17 +518,28 @@ def delete_dans_cor(user_id):
         db.session.commit()
     return render_template('corbeille.html')
 
+
+
+@app.route("/restore/<string:user_id>", methods=["GET", "POST"])
+def restore(user_id):
+    user = User.query.get(user_id)
+    if user:
+        user.is_active = True
+        user.state = "Actif"
+        user.date_fin = None
+    db.session.commit()
+
+    return redirect(url_for('get_corbeille'))
+
+
+
 @app.route('/historique_user')
 def historique_user():
-    # page = request.args.get(get_page_parameter(), type=int, default=1)
-    # per_page = 3  # Nombre de lignes par page
-
-    # # Obtenir la liste paginée des utilisateurs
-    # total = UserServiceHistory.query.count()
-    # pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
-    # user_historique = UserServiceHistory.query.order_by(desc(UserServiceHistory.id)).paginate(page=page, per_page=per_page)
     user_historique = UserServiceHistory.query.order_by(desc(UserServiceHistory.id)).all()
     return render_template('historique.html',user_historique=user_historique)
+
+
+
 
 @app.route('/corbeille')
 def get_corbeille():
@@ -548,12 +548,7 @@ def get_corbeille():
     transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
     db.session.add(transaction)
     db.session.commit()
-    # page = request.args.get(get_page_parameter(), type=int, default=1)
-    # per_page = 10  # Nombre de lignes par page
-    # # Obtenir la liste paginée des utilisateurs
-    # total = Corbeille.query.count()
-    # pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
-    corbeille_pagination = Corbeille.query.join(Role).join(Service).all()
+    corbeille_pagination = User.query.join(Role).join(Service).filter(User.is_active == False).all()
     return render_template('corbeille.html',corbeille_pagination=corbeille_pagination)
 
 
@@ -563,9 +558,27 @@ def guide():
     return render_template('pages/faq.html') 
 
 
+@app.route("/sonatel-gmec/utilisateurs", methods=['POST','GET'])
+@login_required
+def users():
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    per_page = 5  # Nombre de lignes par page
+    user_session = session['login']
+    nom_transac = 'utilisateurs'
+    transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
+    db.session.add(transaction)
+    db.session.commit()
+    # Obtenir la liste paginée des utilisateurs
+    # total = User.query.count()
+    # pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
+    users_pagination = User.query.join(Role).join(Service).filter(User.is_active == True).all()
+    return render_template('pages/utilisateurs.html', users=users,users_pagination=users_pagination) 
 
+
+
+#########################################################################################################################
                                 ########################################################
-                                #                     service                          #
+#################################                     service                          ##################################
                                 ########################################################
 
 
@@ -583,23 +596,6 @@ def services():
     db.session.commit()
     return render_template('pages/services.html',services=services,user=user) 
 
-
-@app.route("/sonatel-gmec/utilisateurs", methods=['POST','GET'])
-@login_required
-def users():
-    page = request.args.get(get_page_parameter(), type=int, default=1)
-    per_page = 5  # Nombre de lignes par page
-    user_session = session['login']
-    nom_transac = 'utilisateurs'
-    transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
-    db.session.add(transaction)
-    db.session.commit()
-    # Obtenir la liste paginée des utilisateurs
-
-    # total = User.query.count()
-    # pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
-    users_pagination = User.query.join(Role).join(Service).all()
-    return render_template('pages/utilisateurs.html', users=users,users_pagination=users_pagination) 
 
 
 
@@ -635,6 +631,14 @@ def consulter_services(id):
 
                                 ########################################################
                                 #                     Type - Defaut                    #
+                                ########################################################
+
+############################################################# FIN SERVICES #########################################################
+
+
+
+                                ########################################################
+#################################                     DEFAUTS                          ##################################
                                 ########################################################
 
 
@@ -902,6 +906,8 @@ def chargement_defauts():
                                 description_du_defaut          = row['Description du Défaut'],
                                 commentaires                   = row['Commentaires'],
                                 note_defaut                    = row['NOTE_DEFAUT'],
+                                commentaires_evaluer           = '',
+                                commentaires_n1                = '',
                                 agent_escalade                 = row['Agent ESCALADE'],
                                 pertinence_escalade            = row['Pertinence ESCALADE'],
                                 type_erreur_escalade           = row['TypeErreurEsacalade'],
@@ -945,6 +951,7 @@ def param_defauts():
 
     return render_template('param_defauts.html',tickets=tickets,Type=Type,types=types,Fichier=Fichier,types_defaut=types_defaut)
 
+
 @app.route('/modif_param/<int:id>', methods=['GET', 'POST'])
 def modif_param(id):
     tickets = Fichier.query.get(id)
@@ -954,9 +961,11 @@ def modif_param(id):
 
     if request.method == 'POST':
         confirm = request.form.get('OUI')
+        n1 = request.form.get('n1')
         if confirm:
             print("Confirmation : " + confirm)
             tickets.confirm = confirm
+            tickets.commentaires_n1 = n1
             # tickets.defaut = "NON"
             db.session.commit()
             if confirm == "OUI":
@@ -987,7 +996,8 @@ def modif_param(id):
             tickets.resolution = request.form.get('resolution_defaut')
             tickets.type_id = request.form.get('type')
             tickets.confirm = "NON"
-
+            tickets.validation = request.form.get('validation')
+            tickets.commentaires_evaluer = request.form.get('evaluer')
             tickets.defaut = request.form.get('defaut')
             tickets.xx_agent_responsable = request.form.get('agent_responsable')
             tickets.xx_agent_refus = request.form.get('agent_refus')
@@ -1202,9 +1212,13 @@ def traitement_ec():
 
 
 
+
+################################################################
+
                                 ########################################################
-                                #                          API                         #
+#################################                     TYPES                            ##################################
                                 ########################################################
+
 
 
 @app.route('/type_defaut')
@@ -1217,6 +1231,25 @@ def type_defaut():
     db.session.add(transaction)
     db.session.commit()
     return render_template('typedefaut.html',defaut=defaut)
+
+@app.route('/modif_typedefaut/<int:id>',methods=['POST'])
+def modiftypedefaut(id):
+    types = Type.query.get(id)
+    if types:
+        types.type_defaut = request.form.get('type')
+        types.description = request.form.get('description')
+    db.session.commit()
+
+    return redirect(url_for('type_defaut'))
+
+@app.route('/delete_type_defaut/<int:id>')
+def delete_type(id):
+    types = Type.query.get(id)
+    if types:
+        db.session.delete(types)
+        db.session.commit()
+
+    return redirect(url_for('type_defaut')) 
 
 @app.route('/ajouter_type_defaut', methods=['POST'])
 def ajouter_type():
@@ -1231,7 +1264,14 @@ def ajouter_type():
         db.session.commit()
 
     return redirect('type_defaut')
+                        ################################ FIN TYPE ################################
 
+
+                                ########################################################
+                                #                          API                         #
+                                ########################################################
+
+######################################################## FIN TYPE #################################################
 
 @app.route('/api/data')
 @login_required
@@ -1296,6 +1336,13 @@ def vue(detail_paramId):
     # role = User.query.filter(User.role_id == id).all()
     types = Type.query.all()
     tickets = Fichier.query.filter_by(defaut="OUI",id=detail_paramId).all()
+    return render_template('details_param.html',tickets= tickets,types= types,Type=Type)
+
+@app.route('/tous_les_defauts/<int:detail_paramId>')
+def tous_les_defauts(detail_paramId):
+    # role = User.query.filter(User.role_id == id).all()
+    types = Type.query.all()
+    tickets = Fichier.query.filter_by(id=detail_paramId).all()
     return render_template('details_param.html',tickets= tickets,types= types,Type=Type)
 
 

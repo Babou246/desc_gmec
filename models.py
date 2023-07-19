@@ -38,7 +38,8 @@ class User(UserMixin, db.Model):
     
     role_user = db.relationship('Role', backref='users', lazy=True)
 
-    def __init__(self, matricule, login, prenom, nom, role, sigle_service, service_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
+    def __init__(self, id,matricule, login, prenom, nom, role, sigle_service, service_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
+        self.id=id
         self.matricule = matricule
         self.login = login
         self.prenom = prenom
@@ -240,6 +241,9 @@ class Fichier(db.Model):
     type = db.relationship('Type', backref='fichiers')
     commentaires = db.Column(db.String(2000))
     note_defaut = db.Column(db.String(10))
+    validation = db.Column(db.String(20))
+    commentaires_evaluer = db.Column(db.TEXT)
+    commentaires_n1 = db.Column(db.TEXT)
     agent_escalade = db.Column(db.String(200))
     pertinence_escalade = db.Column(db.String(100))
     type_erreur_escalade = db.Column(db.String(200))
@@ -297,7 +301,8 @@ class Corbeille(UserMixin, db.Model):
 
 
 
-    def __init__(self, matricule, login, prenom, nom, role, sigle_service, service_id,role_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
+    def __init__(self,id, matricule, login, prenom, nom, role, sigle_service, service_id,role_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
+        self.id = id
         self.matricule = matricule
         self.login = login
         self.prenom = prenom
