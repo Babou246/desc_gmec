@@ -15,8 +15,9 @@ from email.mime.base import MIMEBase
 from email import encoders
 import bcrypt
 import glob
-from models import User,db,app,TypeDefaut,Role,Service,Fichier,Fichier_charger,Ticket,Corbeille,UserServiceHistory,Transaction,Type
+from models import User,db,app,engine,TypeDefaut,Role,Service,Fichier,Fichier_charger,Ticket,Corbeille,UserServiceHistory,Transaction,Type
 from flask_migrate import Migrate
+from sqlalchemy import or_
 from decimal import Decimal
 import openpyxl
 from openpyxl import load_workbook
@@ -31,7 +32,8 @@ from os.path import join, dirname, realpath
 from flask_bcrypt import check_password_hash, generate_password_hash,Bcrypt
 from openpyxl import load_workbook
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from flask_apscheduler import APScheduler
 import csv
 import numpy as np
 
@@ -45,6 +47,11 @@ from flask_paginate import Pagination, get_page_parameter
 from datetime import datetime,timedelta,date
 import datetime
 from sqlalchemy import extract
+import schedule
+import time
+from apscheduler.schedulers.background import BlockingScheduler, BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+
 
 # Configuration 
 
@@ -58,8 +65,9 @@ bcrypt = Bcrypt()
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_USERNAME'] = 'snorange2021@gmail.com'
+app.config['MAIL_DEFAULT_SENDER'] = ('GMEC/DESC/DIS/TR_DEFAUTS', 'snorange2021@gmail.com')  # Nom et adresse email expéditrice par défaut
 # app.config['MAIL_PASSWORD'] = 'mjlokyqorvlrzqud'
-app.config['MAIL_PASSWORD'] = 'nepeeigsxzhbtwgb'
+app.config['MAIL_PASSWORD'] = 'ckdfwuvwjcnzbdxq'
 app.config['MAIL_DEBUG'] = True
 app.config['MAIL_PORT'] =465
 app.config['MAIL_USE_SSL'] = True
@@ -67,72 +75,92 @@ app.config['MAIL_USE_TLS'] = False
 mail = Mail(app)
 
 
-with app.app_context(): 
-    db.create_all()
+scheduler = BlockingScheduler()
+
+
+
 
                                                     ########################################################
                                                     #                     Utilitaire                       #
                                                     ######################################################## 
+with app.app_context(): 
+    db.create_all()
 
 def send_daily_reminder_email():
-    # Calculate the date for the previous day
-    previous_day = datetime.now() - timedelta(days=1)
-    previous_day = previous_day.date()
+    with app.app_context():
+        # Calculate the date for the previous day
+        previous_day = datetime.datetime.now() - timedelta(days=1)
+        previous_day = previous_day.date()
 
-    # Query the tickets that are pending and have a resolution date before the previous day
-    pending_tickets = Ticket.query.filter(Ticket.defaut == 'NON',Ticket.date_resolution_max < previous_day).all()
+        # Query the tickets that are pending and have a resolution date before the previous day
+        pending_tickets = Ticket.query.filter(Ticket.defaut == 'NON',Ticket.date_resolution_max < previous_day).all()
 
-    # Group the tickets by agent
-    tickets_by_agent = {}
-    for ticket in pending_tickets:
-        if ticket.evaluateur in tickets_by_agent:
-            tickets_by_agent[ticket.evaluateur].append(ticket)
-        else:
-            tickets_by_agent[ticket.evaluateur] = [ticket]
+        # Grouper les tickets par agent
+        tickets_by_agent = {}
+        for ticket in pending_tickets:
+            if ticket.evaluateur in tickets_by_agent:
+                tickets_by_agent[ticket.evaluateur].append(ticket)
+            else:
+                tickets_by_agent[ticket.evaluateur] = [ticket]
 
-    # Send the reminder email to each agent with pending tasks
-    for agent, tickets in tickets_by_agent.items():
+        # Envoyer des mails de rappel chaque mois pour les User qui ont des tâches en cours
 
-        # Get agent information
-        agent_info = User.query.filter(User.nom_abrege == agent).first()
-        if agent_info:
-            recipient = agent_info.email
-            nom_abrege_agent = agent_info.nom_abrege
-            login = agent_info.login
-            nom = agent_info.nom
+        for agent, tickets in tickets_by_agent.items():
+            listes = []
+            print('=======> Processing Mail Notification: ', agent)
 
-            subject = 'Rappel : Tâches en attente dans QUALITE'
-            body = f"Bonjour {nom} {nom_abrege_agent}," \
-                   f"\nVous avez des tâches en attente de traitement dans QUALITE. Merci de les prendre en charge." \
-                   f"\n\nVoici la liste des tâches en attente :"
 
-            for ticket in tickets:
-                body += f"\n\n- Libellé de la tâche : {ticket.libelle_service}" \
-                        f"\n  Action attendue : {ticket.description}" \
-                        f"\n  Date d'imputation : {ticket.enregistre_le}" \
-                        f"\n  Date du jour : {previous_day}" \
-                        # f"\n  Délai écoulé : {previous_day - ticket.enregistre_le}"
+            # Get agent information
+            agent_info = User.query.filter(User.nom_abrege == agent).first()
+            # print('@@@@=> Agent Information: ', agent_info.email)
+            if agent_info:
+                recipient = agent_info.email
+                nom_abrege_agent = agent_info.nom_abrege
+                login = agent_info.login
+                nom = agent_info.nom
 
-            body += "\n\nCordialement,\nL'équipe QUALITE"
+                subject = 'Rappel : Tâches en attente dans QUALITE'
+                body = f"Bonjour {nom_abrege_agent.split('_')[1]} {nom} ," \
+                    f"\nVous avez {len(tickets)} tâches en attente de traitement dans QUALITE. Merci de les prendre en charge." \
+                    #    f"\n\nVoici la liste des tâches en attente :"
 
-            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
-            msg.body = body
-            mail.send(msg)
+                # for ticket in tickets:
+                #     body += f"\n\n- Libellé de la tâche : {ticket.libelle_service}" \
+                #             f"\n  Action attendue : {ticket.description}" \
+                #             f"\n  Date d'imputation : {ticket.enregistre_le}" \
+                #             f"\n  Date du jour : {previous_day}" \
+                            # f"\n  Délai écoulé : {previous_day - ticket.enregistre_le}"
 
-            # Send a copy to the chef de service or chef de département
-            if agent_info.role.role == 'Agent':
-                chef_service = User.query.filter(User.service.nom == agent_info.service.nom, User.role.role == 'Chef de Service').first()
-                if chef_service:
-                    msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopb4826@gmail.com'])
-                    msg_cc.body = body
-                    mail.send(msg_cc)
+                body += "\n\nCordialement,\nL'équipe QUALITE"
 
-            # elif agent_info.role.role == 'Chef de Service':
-            #     chef_departement = User.query.filter(User.departement == agent_info.departement, User.role == 'Chef de département').first()
-            #     if chef_departement:
-            #         msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopb4826@gmail.com'])
-            #         msg_cc.body = body
-            #         mail.send(msg_cc)
+                # msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+                # msg.body = body
+                # mail.send(msg)
+
+                # Send a copy to the chef de service or chef de département
+                # if agent_info.role.role == 'Agent':
+                    # chef_service = User.query.filter(User.service.id == agent_info.service.id, User.role.id == 2).first()
+                if len(tickets) > 0:
+                    liste_agent = ['diopabubakr79@gmail.com','snorange2021@gmail.com','diopb4826@gmail.com']
+                    if agent_info.nom_abrege == agent:
+                        print(recipient)
+                        msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=liste_agent)
+                        msg_cc.body = body
+                        print('--------',body)
+                        # mail.send(msg_cc)
+                else:
+                    print('---------------- Bravo Pas de tickets pour {agent_info.nom_abrege}')
+
+                # elif agent_info.role.role == 'Chef de Service':
+                #     chef_departement = User.query.filter(User.departement == agent_info.departement, User.role == 'Chef de département').first()
+                #     if chef_departement:
+                #         msg_cc = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopb4826@gmail.com'])
+                #         msg_cc.body = body
+                #         mail.send(msg_cc)
+with app.app_context():
+    scheduler.add_job(send_daily_reminder_email, CronTrigger(day='1', hour='0', minute='0'))
+
+
 
 def envoi_agent(user_id, confirm):
     if confirm == "OUI":
@@ -146,12 +174,15 @@ def envoi_agent(user_id, confirm):
     msg.body = body
     mail.send(msg)
 
-def send_validation_reminder_email(defaut):
-    subject ="Les enfants je voulais vous avertir KKKKKKKKKKKKKKKKKK"
-    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[defaut.user_email])
-    msg.body = "Veuillez valider votre défaut."
+def send_validation_reminder_email():
+    subject ="Les enfants je voulais vous avertir "
+    msg = Message(subject, recipients=['diopabukakr79@gmail.com'])
+    msg.body = "Veuillez valider votre défaut PPPPPPPPPPPPPPPPP."
     # Envoyer l'e-mail
     mail.send(msg)
+
+
+
 
 def schedule_validation_reminder_emails():
     defauts = TypeDefaut.get_defauts_to_remind()
@@ -168,7 +199,8 @@ def envoi_n_plus_one(user_id, confirm):
         subject = 'Contestation du défaut de votre Supérieur'
         body = f"Le défaut de traitement imputé à {user_id} a été contesté et soumis à validation."
 
-    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopabubakr79@gmail.com'])
+    msg = Message(subject,recipients=['snorange2021@gmail.com'])
+    # msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['snorange2021@gmail.com'])
     msg.body = body
     mail.send(msg)
 
@@ -194,6 +226,7 @@ def load_user(user_id):
 @app.route("/logout")
 def logout():
     logout_user()
+    print("=============> deconnecté ", session)
     return redirect('login')
 
 @app.route('/transactions')
@@ -208,20 +241,160 @@ def transactions():
                         ########################################################
                         #                     Dashboard                        #
                         ########################################################
-
+                        
 
 @app.route("/sonatel-gmec/menu", methods=('GET', 'POST'))
 @login_required
 def home():
-    print('cureent_user ====>',current_user.service.nom)
-    return render_template('pages/menu.html')
+    print('cureent_user ====>', current_user.service.nom)
+    tous_tickets = Fichier.query.count()
+    tickets = Fichier.query.filter(Fichier.defaut =="OUI").count()
+
+    # Tickets totals et Tickets des User
+    TT_user = Fichier.query.filter(Fichier.validation == "Valide", Fichier.xx_agent_responsable == current_user.nom_abrege).count()
+    TT = Fichier.query.filter(Fichier.validation == "Valide").count()
+    if current_user.nom_abrege.split('_')[0] is None:
+        pass
+    else:
+        current_service = current_user.nom_abrege.split('_')[0]
+
+    # Resolution des Tickets
+    Ticket_solved = Fichier.query.filter(or_(Fichier.defaut == "NON", Fichier.defaut == "NON MAIS", Fichier.confirm == "OUI")).count()
+    Ticket_non_solved = Fichier.query.filter(Fichier.confirm == "NON").count()
+    Ticket_non_solved_user = Fichier.query.filter(Fichier.confirm == "NON", Fichier.xx_agent_responsable == current_user.nom_abrege).count()
+
+    Ticket_non_solved_service = Fichier.query.filter(
+        Fichier.confirm == "NON",
+        Fichier.xx_agent_responsable.like(f"{current_service}_%")
+    ).count()
+    TT_service = Fichier.query.filter(Fichier.validation == "Valide",
+                                       Fichier.xx_agent_responsable.like(f"{current_service}_%")
+                                       ).count()
+
+    # Pour un user
+    Ticket_solved_user = Fichier.query.filter(
+        or_(Fichier.defaut == "NON", Fichier.defaut == "NON MAIS", Fichier.confirm == "OUI"),
+        Fichier.xx_agent_responsable == current_user.nom_abrege
+    ).count()
+
+    # Défaut total et pour un user
+    DF = Fichier.query.filter(Fichier.defaut == "OUI").count()
+    DF_user = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.validation == "Invalide").count()
+    DF_user_service = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.validation == "Invalide",
+                                           Fichier.xx_agent_responsable.like(f"{current_service}_%")
+                                           ).count()
+
+    print("++++++++++++++++++++++++>>>>>", tickets)
+    print("------------------------>>>>>", DF)
+
+    if TT_user == 0 or TT == 0:
+        Note_Qualité_Interne = 0
+        Note_Qualité_Interne_user = 0
+        note_qualite_interne_service = 0  # Set a default value
+    else:
+        Note_Qualité_Interne = (TT - DF) / TT
+        Note_Qualité_Interne_user = (TT_user - DF_user) / TT_user
+        note_qualite_interne_service = (TT_service - DF_user_service) / TT_service
+    print("Note de Qualité Interne: ", Note_Qualité_Interne)
+    print("Note de Qualité Interne User: ", Note_Qualité_Interne_user)
+    print("Note de Qualité Interne Service: ", note_qualite_interne_service)
+
+
+    query = "SELECT * FROM note_qualite_interne_mois_par_agent"
+    
+    # Exécutez la requête en utilisant l'objet text de SQLAlchemy
+    connection = engine.connect()
+    result = connection.execute(text(query))
+    agents = result.fetchall()
+
+    print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
+    service = "SELECT * FROM note_qualite_interne_mois_par_service"
+    service = connection.execute(text(service))
+    service = service.fetchall()
+
+    total_tickets_traites =  connection.execute(text("SELECT SUM(total_tickets_traites) FROM note_qualite_interne_mois_par_agent"))
+    total_tickets_traites = total_tickets_traites.fetchall()[0][0]
+
+    total_tickets_traites_ser =  connection.execute(text("SELECT * FROM note_qualite_interne_mois_par_service"))
+    total_tickets_traites_ser = total_tickets_traites_ser.fetchall()
+
+    total_tickets =  connection.execute(text("SELECT SUM(total_tickets) FROM note_qualite_interne_mois_par_agent"))
+    total_tickets = total_tickets.fetchall()[0][0]
+
+    total =  connection.execute(text("SELECT total_tickets FROM note_qualite_interne_mois_par_agent"))
+    total = total.fetchall()
+    
+    df2 = [[j + 1, i[0]] for j, i in enumerate(total)]  
+
+    total_traites =  connection.execute(text("SELECT total_tickets_traites FROM note_qualite_interne_mois_par_agent"))
+    total_traites = total_traites.fetchall()
+    df3 = [[k + 1, i[0]] for k, i in enumerate(total)] 
+
+
+    dfs =  connection.execute(text("SELECT total_defauts FROM note_qualite_interne_mois_par_agent"))
+    dfs = dfs.fetchall()
+    df1 = [[l + 1, i[0]] for l, i in enumerate(dfs)] 
+        
+    print("les i: ", df2)
+
+    order_by = connection.execute(text("SELECT * FROM note_qualite_interne_mois_par_agent ORDER BY total_defauts DESC"))
+    order_by = order_by.fetchall()
+
+    QI = connection.execute(text("SELECT * FROM note_qualite_interne_mois_par_agent ORDER BY note_qualite_interne DESC LIMIT 4"))
+    QI = QI.fetchall()
+
+    QI_service = connection.execute(text("SELECT * FROM note_qualite_interne_mois_par_service ORDER BY total_defauts DESC LIMIT 4"))
+    QI_service = QI_service.fetchall()
+
+    trans = connection.execute(text("SELECT * FROM transaction ORDER BY  heure DESC LIMIT 4"))
+    trans = trans.fetchall()
+
+    nqi_services = connection.execute(text("SELECT * FROM note_qualite_interne_mois_par_agent"))
+    nqi_services = nqi_services.fetchall()
+
+    nqi_dep = connection.execute(text("SELECT AVG(note_qualite_interne) FROM note_qualite_interne_mois_par_agent"))
+    nqi_dep = nqi_dep.fetchall()
+    
+
+    print("============>",session)
+    return render_template('pages/menu.html',
+                           service=service,
+                           df1=df1,
+                           df2=df2,
+                           df3=df3,
+                           agents=agents,
+                           total_tickets_traites=total_tickets_traites,
+                           total_tickets=total_tickets,
+                           order_by=order_by,
+                           total_tickets_traites_ser=total_tickets_traites_ser,
+                           nqi_services=nqi_services,
+                           nqi_dep=nqi_dep,
+                           QI=QI,
+                           trans=trans,
+                           Ticket_non_solved_service=Ticket_non_solved_service,
+                           Ticket_non_solved_user=Ticket_non_solved_user,
+                           Note_Qualité_Interne=Note_Qualité_Interne,
+                           Note_Qualité_Interne_user=Note_Qualité_Interne_user,
+                           note_qualite_interne_service=note_qualite_interne_service,
+                           TT=TT,
+                           TT_user=TT_user,
+                           DF=DF,
+                           DF_user=DF_user,
+                           DF_user_service=DF_user_service,
+                           tous_tickets=tous_tickets,
+                           tickets=tickets,
+                           Ticket_solved=Ticket_solved,
+                           Ticket_non_solved=Ticket_non_solved,
+                           Ticket_solved_user=Ticket_solved_user
+    )
 
 
 
- ################################
-                        ########################################################
-#########################                     PROFILS                          #####################
-                        ########################################################
+ ################################################################################################################################
+
+                                              ########################################################
+                ##############################                     PROFILS                            #####################
+                                              ########################################################
 
 
 @app.route("/sonatel-gmec/profils", methods=['POST','GET'])
@@ -245,7 +418,8 @@ def gestion_profils(id):
     role = User.query.filter(User.role_id == id).all()
 
     user_session = session['login']
-    nom_transac = f'gestion_profils/{id}'
+    nom_role = [nom.role.role for nom in role]
+    nom_transac = f'gestion_profils/{nom_role[0]}'
     transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
     db.session.add(transaction)
     db.session.commit()
@@ -278,6 +452,7 @@ def profile_modif(id):
 
 
 @app.route("/sonatel-gmec/monprofil")
+@login_required
 def monprofil():
     print('les sessions id',session)
     # Exécution de l'insertion dans la table "transaction"
@@ -360,34 +535,45 @@ def resolution_utilisateurs():
         password = "Son@tel2021"
         print('ooooooooo',password)
         user_session = session['login']
-        nom_transac = 'add_user'
+        nom_transac = 'Ajout_Utilisateur'
         transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
 
         # Vérifier si l'utilisateur existe déjà dans la base de données
         existing_user = User.query.filter_by(login=login).first()
-        if existing_user:
-            flash("L'utilisateur avec le login {} existe déjà.".format(login))
+        if not existing_user:
+            # Générer le hash du mot de passe
+            role = Role.query.get(role)  # Récupérer l'instance de la classe Role avec l'ID de rôle
 
-        # Générer le hash du mot de passe
-        role = Role.query.get(role)  # Récupérer l'instance de la classe Role avec l'ID de rôle
+            user = User(
+                matricule=request.form['matricule'],
+                login=request.form['login'],
+                prenom=request.form['prenom'],
+                nom=nom,
+                role=role,
+                sigle_service=request.form['sigle_service'],
+                service_id=int(request.form['service_id']),
+                state=request.form['statut'],
+                email=email,
+                nom_abrege=nom_abrege,
+                date_debut=datetime.datetime.now(),
+                password="Son@tel2021"
+            )
 
-        user = User(matricule=request.form['matricule'], login=request.form['login'], prenom=request.form['prenom'], nom=nom, role=role,
-                    sigle_service=request.form['sigle_service'], service_id=int(request.form['service_id']), state=request.form['statut'], email=email, nom_abrege=nom_abrege, date_debut=datetime.datetime.now(), password="Son@tel2021")
+            db.session.add(user)
+            db.session.commit()
+            pwd = "Son@tel2021"
+            subject = 'Notification de la Création de Compte'
+            url = "http://127.0.0.1:5000/sonatel-gmec/menu"
+            body = f'Bonjour {prenom} {nom} \nVotre Compte a été crée avec succés avec comme mot de passe par défaut {pwd}\nVeuillez-vous rendre sur la plateforme : {url}\n\nCordialement,\nEquipe Qualité'
 
-        db.session.add(user)
-        db.session.commit()
-        pwd = "Son@tel2021"
-        subject = 'Notification de la Création de Compte'
-        body = f'Bonjour {prenom} {nom} \nVotre Compte a été crée avec succés avec comme mot de passe par défaut {pwd}\n\nCordialement,\nEquipe Qualité'
+            # msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=['diopabubakr79@gmail.com'])
+            msg = Message(subject, recipients=[email])
+            msg.body = body
 
-        msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[email])
-        msg.body = body
-
-        mail.send(msg)
-
-
-
-    return render_template('pages/menu.html')
+            mail.send(msg)
+        else:
+            flash("L'utilisateur avec le login {} existe déjà.".format(login), "warning")
+    return redirect(url_for('home'))
 
 
 @app.route('/confirm_email/<token>')
@@ -398,10 +584,12 @@ def confirm_email(token):
         return flash('<h1>The token is expired!</h1>')
     return redirect(url_for('login'))
 
-################################
-                            ########################################################
-#############################                     SCRIPT USERS                     ######################################
-                            ########################################################
+
+
+
+                                            ########################################################
+#############################################                     SCRIPT USERS                     ######################################
+                                            ########################################################
 
 
 @app.route('/changepassword', methods=['GET', 'POST'])
@@ -416,7 +604,8 @@ def changepassword():
         utilisateur = User.query.filter(User.login == login).first()
 
         print('=============>',utilisateur)
-        user_session = session['login']
+        # user_session = session['login']
+        user_session = login
         nom_transac = 'changepassword'
         transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
         db.session.add(transaction)
@@ -510,17 +699,19 @@ def delete(user_id):
 
 
 @app.route('/delete_dans_corbeille/<int:user_id>')
+@login_required
 def delete_dans_cor(user_id):
-    corebeille = Corbeille.query.get(user_id)
+    corebeille = User.query.get(user_id)
 
     if corebeille:
         db.session.delete(corebeille)
         db.session.commit()
-    return render_template('corbeille.html')
+    return redirect(url_for('get_corbeille'))
 
 
 
 @app.route("/restore/<string:user_id>", methods=["GET", "POST"])
+@login_required
 def restore(user_id):
     user = User.query.get(user_id)
     if user:
@@ -534,6 +725,7 @@ def restore(user_id):
 
 
 @app.route('/historique_user')
+@login_required
 def historique_user():
     user_historique = UserServiceHistory.query.order_by(desc(UserServiceHistory.id)).all()
     return render_template('historique.html',user_historique=user_historique)
@@ -542,6 +734,7 @@ def historique_user():
 
 
 @app.route('/corbeille')
+@login_required
 def get_corbeille():
     user_session = session['login']
     nom_transac = 'corbeille'
@@ -554,6 +747,7 @@ def get_corbeille():
 
 
 @app.route("/sonatel-sovar/guide-utilisateur", methods=['POST','GET'])
+@login_required
 def guide():
     return render_template('pages/faq.html') 
 
@@ -568,9 +762,6 @@ def users():
     transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
     db.session.add(transaction)
     db.session.commit()
-    # Obtenir la liste paginée des utilisateurs
-    # total = User.query.count()
-    # pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
     users_pagination = User.query.join(Role).join(Service).filter(User.is_active == True).all()
     return render_template('pages/utilisateurs.html', users=users,users_pagination=users_pagination) 
 
@@ -585,7 +776,7 @@ def users():
 @app.route("/sonatel-gmec/services", methods=['POST','GET'])
 @login_required
 def services():
-    dim = date.today() 
+    dim = date.today()
     date_saisi= dim.strftime('%d-%m-%Y')
     services = Service.query.all()
     user = User.query.all()
@@ -604,7 +795,7 @@ def services():
 def service_users():
     # Faire correspondre le service user et le service en cours
     users_service = User.query.filter_by(service=current_user.service).all()
-    users_services=User.query.all()
+    users_services= User.query.all()  
     # flash('blabla','success')
     user_session = session['login']
     nom_transac = f'service_users-{users_service.service.nom}'
@@ -619,19 +810,25 @@ def service_users():
 def consulter_services(id):
     # service = Service.query.get(id)
     users_service = User.query.filter(User.service_id == id).all()
+    count_service = User.query.filter(User.service_id == id).count()
+
     # consulte = Service.query.filter_by(id=service).first()
+    print(users_service,'°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
     user_session = session['login']
-    nom_transac = f'consulter_services/{id}'
+    nom_service = [nom.service.nom for nom in users_service]
+    servie = Service.query.filter(Service.id == id).first()
+
+    print(nom_service,'°°°********************************')
+    if len(nom_service) == 0:
+        nom_transac = f'consulter_services/{servie.nom}'
+    else:
+        nom_transac = f'consulter_services/{nom_service[0]}'
+        
     transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
     db.session.add(transaction)
     db.session.commit()
-    return render_template('service_users.html', users_service=users_service)
+    return render_template('service_users.html', users_service=users_service,count_service=count_service)
 
-
-
-                                ########################################################
-                                #                     Type - Defaut                    #
-                                ########################################################
 
 ############################################################# FIN SERVICES #########################################################
 
@@ -642,167 +839,6 @@ def consulter_services(id):
                                 ########################################################
 
 
-########################### Premier Version des parametres 
-@app.route('/parametrage-defauts', methods=['GET', 'POST'])
-@login_required
-def parametrage_defauts():
-
-    user_session = session['login']
-    nom_transac = 'parametrage-defauts'
-    transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
-    db.session.add(transaction)
-    db.session.commit()
-    # print('OOOOOOOOOOOOOOOOOOOO',user_session)
-    user = User.query.all()
-    if request.method == 'POST':
-        if TypeDefaut.query.count() == 0:
-            print('OOJHHGGGGGHHHH++++>')
-            code = "code_124"
-        else:
-            print("CCCCCCCCCCCCCCCCCCCCCC")
-            code = TypeDefaut.get_next_code()
-
-        user_session = session['_user_id']
-        type_defaut = request.form.get('type_defaut')
-        description_defaut = request.form.get('description_defaut')
-        # confirm = request.form.get('oui')
-        date_debut = request.form.get('date_debut')
-        date_fin = None  # La date de fin est initialisée à None
-        commentaires = request.form.get('commentaires')
-        validation = request.form.get('validation')
-        email_concerne = request.form.get('email')
-        evaluer = request.form.get('evaluer')
-        n1 = request.form.get('n1')
-
-        # print('confirmation >>>>>',confirm)
-        listes = []
-        for user in user:
-            if email_concerne == user.email:
-                user_email = user.email
-                service= user.service.nom
-                # listes.append({'code':code, 'description':description_defaut,'type_default':type_defaut,'commentaires':commentaires,'validation':validation,'service':service})
-                # print("PPPPPPPPPPPPPPPPPPPPP==> ",listes)
-
-            # else:
-            #     flash(f"Le mail {email_concerne} est insdisponible")
-
-        if type_defaut == "" or description_defaut == "" or date_debut == None:
-            flash('Les champs ne doivent pas être vides', 'danger')
-            return redirect(url_for('parametrage_defauts'))
-
-        print("Insertion passé avec succés: com et com_n+1",evaluer,n1)
-
-        new_defaut = TypeDefaut(
-            code = code,
-            type_defaut=type_defaut,
-            description_defaut=description_defaut,
-            confirm="NON",
-            date_debut=date_debut,
-            date_fin=date_fin,
-            user_email=user_email,
-            commentaires=commentaires,
-            validation=validation,
-            service=service,
-            commentaires_evaluer=evaluer,
-            commentaires_n1=n1
-        )
-
-        # Ajouter le nouveau défaut à la base de données blabla
-        db.session.add(new_defaut)
-        db.session.commit()
-    page = request.args.get(get_page_parameter(), type=int, default=1)
-    per_page = 5  # Nombre de lignes par page
-    total = TypeDefaut.query.count()
-    pagination = Pagination(page=page, per_page=per_page, total=total, css_framework='bootstrap4')
-    defauts = TypeDefaut.query.order_by(desc(TypeDefaut.id)).all()
-    elements = TypeDefaut.query.filter(TypeDefaut.service == current_user.service.nom).distinct().order_by(TypeDefaut.date_debut.desc()).all()
-
-    return render_template('parametrage_defauts.html', defauts=defauts,user=user,elements=elements,pagination=pagination)
-##################################################################################################################################
-
-@app.route('/modifier-defaut/<int:defaut_id>', methods=['GET', 'POST'])
-@login_required
-def modifier_defaut(defaut_id):
-    
-    defaut = TypeDefaut.query.get(defaut_id)
-    user_email = User.query.filter_by(email=defaut.user_email).first()
-    print('4444444444444',user_email)
-    user_session = session['login']
-    nom_transac = f'modifier-defaut/{defaut_id}'
-    transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
-    db.session.add(transaction)
-    db.session.commit()
-    if request.method == 'POST':
-        confirm = request.form.get('OUI')
-
-        print(">>>>>>>>>>", confirm)
-        if confirm:
-            defo = TypeDefaut.query.filter(TypeDefaut.user_email==user_email.email,TypeDefaut.date_debut==defaut.date_debut).all()
-            print('fffffffffffffffffffff',[defo.validation for defo in defo])
-
-
-            
-            if "Invalide" in [defo.validation for defo in defo]:
-
-                flash('L\'utilisateur a un defaut qui est à l\'etat invalide, \n Un mail lui sera transmis en guise de validation')
-                print("ooooooooooooooooooooooooooooooooooooooooooooooo")
-                subject = 'Appel à validation'
-                body = f"Votre N+1 vient de faire une tentive de confirmation du défaut de traitement imputé à {defaut.user_email}\n Veuillez valider le defaut qu'on vous a imputé" 
-                msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
-                msg.body = body
-                mail.send(msg)
-            else:
-                if confirm:
-                    defauts = TypeDefaut.query.filter_by(user_email=user_email.email,date_debut=defaut.date_debut).all()
-                    for defaut in defauts:
-                        defaut.confirm = confirm
-                    db.session.commit()
-
-                if confirm == "OUI":
-                    subject = 'Confirmation de votre N+1'
-                    body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {defaut.user_email}"
-                else:
-                    subject = 'Contestation des défauts'
-                    body = f"Le défaut de traitement imputé à {defaut.user_email} a été contesté et soumis à votre N+1 pour confirmation."
-
-                    # send_validation_reminder_email(defauts)
-                    schedule_validation_reminder_emails()
-
-                msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
-                msg.body = body
-                mail.send(msg)
-
-                # On notifie lagent et son N+1
-                # envoi_agent(defaut.user_email, confirm)
-                # Envoie mail à l'agent
-                envoi_agent('diopb4826@gmail.com', confirm)
-                # Envoie mail à l'agent N+1
-                envoi_n_plus_one(defaut.user_email, confirm)
-            
-
-        # Je voudrais separer pour que ne modifier que la confirmation (OUI/NON)
-        elif request.form.get('description_defaut') or request.form.get('date_fin') or request.form.get('type_defaut') or request.form.get('commentaires') or request.form.get('validation') or request.form.get('evaluer') or request.form.get('n1'):
-            defaut.description_defaut = request.form.get('description_defaut')
-            defaut.date_fin = request.form.get('date_fin')
-            defaut.type_defaut = request.form.get('type_defaut')
-            defaut.commentaires = request.form.get('commentaires')
-            defaut.validation = request.form.get('validation')
-            evaluer = request.form.get('evaluer')
-            n1 = request.form.get('n1')
-            # print('===>>>>>',session.get(TypeDefaut, defaut_id),'Object: ',defaut)
-            print('===>>>>>',session.get(TypeDefaut, defaut_id))
-
-            defaut.commentaires_evaluer = evaluer
-            defaut.commentaires_n1 = n1
-
-            db.session.commit()
-        # flash('La description du défaut a été modifiée avec succès!', 'success')
-        return redirect(url_for('parametrage_defauts'))
-
-    return render_template('modifier_defaut.html', defaut=defaut)
-
-
-# Interface de chargement des fichiers plats « Défauts » qui permet de charger les tickets dans la table Fichier c'est à dire le ficheir à charger
 @app.route('/chargement-defauts', methods=['GET', 'POST'])
 @login_required
 def chargement_defauts():
@@ -850,7 +886,9 @@ def chargement_defauts():
                     # Remplacer les valeurs 'nan' par une valeur par défaut ou une chaîne vide
                     df.replace({np.nan: None}, inplace=True)
                     # Itérer sur les lignes du dataframe et enregistrer dans la base de données
+                    
                     for _, row in df.iterrows():
+
                         file = Fichier(
                                 numero_demande                 = row['N° Commande'],
                                 enregistre_le                  = row['Enregistré le'],         
@@ -906,6 +944,7 @@ def chargement_defauts():
                                 description_du_defaut          = row['Description du Défaut'],
                                 commentaires                   = row['Commentaires'],
                                 note_defaut                    = row['NOTE_DEFAUT'],
+                                validation                     = 'Invalide',
                                 commentaires_evaluer           = '',
                                 commentaires_n1                = '',
                                 agent_escalade                 = row['Agent ESCALADE'],
@@ -913,7 +952,12 @@ def chargement_defauts():
                                 type_erreur_escalade           = row['TypeErreurEsacalade'],
                                 actions_correctives_preventives= row['Actions Correctives/Préventives']
                         )
-
+                        if row['Défaut (OUI/NON)'] == 'NON' or row['Défaut (OUI/NON)'] == 'NON MAIS':
+                            file.validation = 'Valide'
+                            file.confirm = "OUI"
+                        else:
+                            file.validation = 'Invalide'
+                            file.confirm = 'NON'
                         db.session.add(file)
             db.session.commit()
 
@@ -933,7 +977,7 @@ def chargement_defauts():
 ############################ Parametre de la nouvelle Version 
 @app.route("/param_defauts")
 @login_required
-def param_defauts():
+def  param_defauts():
     # Obtenez le mois en cours au format "YYYY/MM"
     current_month = datetime.datetime.now().strftime("%Y/%m")
     types_defaut = Type.query.all()
@@ -941,51 +985,122 @@ def param_defauts():
 
     types = Type.query.distinct(Type.type_defaut).all()
 
+    # Obtenez le mois précédent au format "YYYY/MM" : ici j'ai recuperer à 2 mois derriére (60 jours), faut le modifier en 30 jours en prod
+    month = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y/%m")
+    previous_month = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%Y/%m")
+    previous_month_long = (datetime.datetime.now() - datetime.timedelta(days=150)).strftime("%Y/%m")
+    tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == current_month).all()
+
     if current_month in [fichier.xb_periode for fichier in Fichier.query.filter_by(defaut="OUI").all()]:
         tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == current_month).all()
+
     else:
-        # Obtenez le mois précédent au format "YYYY/MM" : ici j'ai recuperer à 2 mois derriére (60 jours), faut le modifier en 30 jours en prod
-        previous_month = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%Y/%m")
-        # Ici j'ai filtré les tickets qui ont un défaut à OUI dont la période correspondant au mois indiqué
-        tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == previous_month).all()
+        if month in [fichier.xb_periode for fichier in Fichier.query.filter_by(defaut="OUI").all()]:
+            tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == month).all()
+
+        elif previous_month in [fichier.xb_periode for fichier in Fichier.query.filter_by(defaut="OUI").all()]:
+            tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == previous_month).all()
+
+        else:
+            tickets = Fichier.query.filter(Fichier.defaut == "OUI", Fichier.xb_periode == previous_month_long).all()
 
     return render_template('param_defauts.html',tickets=tickets,Type=Type,types=types,Fichier=Fichier,types_defaut=types_defaut)
 
 
 @app.route('/modif_param/<int:id>', methods=['GET', 'POST'])
+@login_required
 def modif_param(id):
     tickets = Fichier.query.get(id)
     types = Type.query.get(id)
+    user = User.query.get(id)
 
     
 
     if request.method == 'POST':
         confirm = request.form.get('OUI')
         n1 = request.form.get('n1')
+        confirm_defaut = request.form.get('confirm_defaut')
+        print("============>",confirm_defaut)
+        # Confirmation de l'utilisateur
+        if confirm_defaut == "OUI":
+            defo = Fichier.query.filter_by(xx_agent_responsable=user.nom_abrege,defaut="OUI").all()
+
+            print("=======>",[defo.validation for defo in defo])
+            if "Invalide" in [defo.validation for defo in defo]:
+                flash(f'Bonjour {user.prenom} {user.nom} Vous avez un defaut qui est à l\'etat invalide. Veuillez valider d\'abords tous les défauts avant de proceder à la confirmation.')
+            else:
+                count = Fichier.query.filter(Fichier.defaut=="OUI",current_user.id==id).count()
+                print("LLLLLLLLLLLLLL",id)
+                print("ZZZZZZZZZZZZZZZZZZZZZZZ",count)
+                if count>0:
+                    print("OOOOOOOOOOPPPPPPPPPPPP",count)
+                    subject = f'Appel à Confirmation pour l\'agent {user.prenom} {user.nom}'
+                    body = f"L'agent {user.nom} {user.prenom} vient de confirmer ses défauts \n Veuillez confirmer pour finaliser le defaut."
+                    # Faut mettre l'agent N+1 qui va recevoir le mail
+                    user_service = User.query.filter(User.service_id==user.service_id,User.role_id==2).all()
+                    liste_des_chef_service = [user.email for user in user_service]
+
+                    print('------------>',liste_des_chef_service)
+                    
+                    msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[liste_des_chef_service[0]])
+                    msg.body = body
+                    # mail.send(msg)
+                else:
+                    flash(f'Bonjour {user.prenom} {user.nom} \n\nVous n\'avez pas de defaut à confirmer\nPour plus d\'info contacter l\'équipe qualité')
+
+        # Confirmation du Superieur
         if confirm:
             print("Confirmation : " + confirm)
             tickets.confirm = confirm
             tickets.commentaires_n1 = n1
             # tickets.defaut = "NON"
-            db.session.commit()
+            # db.session.commit()
+            
+            ticket = Fichier.query.filter_by(xx_agent_responsable=tickets.xx_agent_responsable,defaut="OUI").all()
             if confirm == "OUI":
-                subject = 'Confirmation de votre N+1'
-                body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {tickets.demandeur}"
+                print('00000000000000000000000000000',[ticket.xx_agent_responsable for ticket in ticket])
+                if "Invalide" in [ticket.validation for ticket in ticket]:
+                    utilisateur = User.query.filter_by(service_id=current_user.service_id).all()
+                    print('MMMMMMMMMMMMMMMMMMMMMMMMMM',[uti.email for uti in utilisateur])
+                    for uti in utilisateur:
+                        if [ticket.xx_agent_responsable for ticket in ticket][0] == uti.nom_abrege:
+                            print('<---------------------------------->')
+                            print('-------->',uti.email,'<--------')
+                            print('<---------------------------------->')
+                            flash('L\'utilisateur a un defaut qui est à l\'etat invalide, \n Un mail lui sera transmis en guise de validation')
+                            subject = 'Appel à Validation des défauts'
+                            body = f"Votre N+1 vient de faire une tentative de confirmation du défaut de traitement imputé à {tickets.xx_agent_responsable}"
+                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[uti.email])
+                            msg.body = body
+                            # mail.send(msg)
+                else:
+                    print("=====> confirm",confirm)
+                    for ticket in ticket:
+                        ticket.confirm = confirm
+                        # ticket.defaut ="NON"
+                    db.session.commit()
+                    subject = 'Confirmation de votre N+1'
+                    body = f"Votre N+1 vient de confirmer le défaut de traitement imputé à {tickets.xx_agent_responsable}"
+
+                    envoi_agent('diopb4826@gmail.com', confirm)
+                    envoi_n_plus_one(tickets.xx_agent_responsable, confirm)
             else:
+                print("=====> confirm",confirm)
+                for ticket in ticket:
+                    ticket.confirm = confirm
+                db.session.commit()
                 subject = 'Contestation des défauts'
-                body = f"Le défaut de traitement imputé à {tickets.demandeur} a été contesté et soumis à votre N+1 pour confirmation."
+                body = f"Le défaut de traitement imputé à {tickets.xx_agent_responsable} a été contesté et soumis à votre N+1 pour confirmation."
 
                 # send_validation_reminder_email(defauts)
                 # schedule_validation_reminder_emails()
 
-            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
-            msg.body = body
-            mail.send(msg)
+                msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+                msg.body = body
+                mail.send(msg)
 
             # On notifie lagent et son N+1
             # envoi_agent(defaut.user_email, confirm)
-            envoi_agent('diopb4826@gmail.com', confirm)
-            envoi_n_plus_one(tickets.demandeur, confirm)
         else:
             tickets.type_description_defaut = request.form.get('type_description_defaut')
             tickets.libelle_service = request.form.get('libelle')
@@ -1005,13 +1120,13 @@ def modif_param(id):
             tickets.description_du_defaut = request.form.get('description_du_defaut')
             tickets.commentaires = request.form.get('commentaires')
 
-            print("Description_defaut :"+request.form.get('description_du_defaut'))
-            print("type_description_defaut :"+request.form.get('type_description_defaut'))
+            # print("Description_defaut :"+request.form.get('description_du_defaut'))
+            # print("type_description_defaut :"+request.form.get('type_description_defaut'))
             if tickets.description_du_defaut:
                 print("SSSSSSSSSSSSSSSSSSSSSS")
                 db.session.commit()
             else:
-                prin('NOOOOOOOOOOOOOOOOOOOOOOOOOO')
+                print('NOOOOOOOOOOOOOOOOOOOOOOOOOO')
 
     return redirect(url_for('param_defauts'))
 
@@ -1021,16 +1136,20 @@ def modif_param(id):
 @login_required
 def chargement_tickets():
 
-
+    # Gerer les logs si l'utilisateur accede au chargement de tickets
     user_session = session['login']
     nom_transac = 'chargement-tickets'
     transaction = Transaction(users_transac=user_session, nom_transac=nom_transac)
     db.session.add(transaction)
     db.session.commit()
+
     if request.method == 'POST':
+        # On recupere la confirmation (OUI/NON)
         confirmation = request.form.get('confirmation')
         # noconf= request.form.get('noconf')
 
+        # Si OUI on traite le fichier avec pandas pour faire correspondre les utilisateurs dans le fichier appelé
+        # XX_AGENT_RESPONSABLE aux utilisateurs qui sont actifs dans la base de données cad à User.state == 'Actif'
         if confirmation == 'Oui':
             file = request.files['file']
             liste_utile =[]
@@ -1044,7 +1163,7 @@ def chargement_tickets():
 
                     # Nombre d'enregistrements rejetés
                     num_rejected = 0  
-                    # Liste des enregistrements rejetés
+                    # Liste des enregistrements rejetés cad liste pour les stocker
                     rejected_records = []
 
                     df.fillna('', inplace=True)
@@ -1056,7 +1175,7 @@ def chargement_tickets():
                             utilisateur = User.query.filter(User.nom_abrege == row['XX_AGENT_RESPONSABLE'], User.state == 'Actif').first()
                             # print('>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<', utilisateur)
                             if utilisateur:
-                                # print('Insertion successful')
+                                # print('Insertion avec--->succés')
                                 # Charger l'enregistrement dans la base de données
                                 ticket = Ticket(
                                     numero_demande=row['N° Commande'],
@@ -1091,7 +1210,8 @@ def chargement_tickets():
 
                     # Nombre d'enregistrements chargés avec succès
                     num_loaded = len(df) - num_rejected
-
+                    
+                    # Affiche du popup aprés chargement des tichets 
                     flash(f"Nombre d'enregistrements à charger: {len(df)}", 'info')
                     flash(f"Nombre d'enregistrements chargés: {num_loaded}", 'success')
                     flash(f"Nombre d'enregistrements rejetés: {num_rejected}", 'warning')
@@ -1115,7 +1235,7 @@ def chargement_tickets():
                             
                             writer.writerows(rejected_records)
 
-                    # Envoyer une mail les concerné
+                    # Envoyer une mail les concerné 
                     data = pd.read_csv(file_path)
                     agents = df['XX_AGENT_RESPONSABLE'].unique()
 
@@ -1135,10 +1255,10 @@ def chargement_tickets():
                                 f"Nous vous invitons à vous connecter à QUALITE pour traiter/commenter les erreurs critiques vous concernant." \
                                 f"\nCordialement," \
                                 f"\nL'équipe QUALITE"
-
-                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=["diopabubakr79@gmail.com"])
+                            print('--------------------------------------->',recipient)
+                            msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[recipient])
                             msg.body = body
-                            mail.send(msg)
+                            # mail.send(msg)
 
                             # Envoyer une copie au N+1
                             # n_plus_one_recipient = agent_info.n_plus_one_email
@@ -1146,7 +1266,7 @@ def chargement_tickets():
                             if n_plus_one_recipient:
                                 msg = Message(subject, sender=app.config['MAIL_USERNAME'], recipients=[n_plus_one_recipient])
                                 msg.body = body
-                                mail.send(msg)
+                                # mail.send(msg)
                         
                     # send_daily_reminder_email()
                             
@@ -1169,7 +1289,7 @@ def chargement_tickets():
 @app.route('/sonatel-gmec/details_tickets')
 @login_required
 def details_tickets():
-    
+    # Recuperer le dossier qui contient le fichier
     folder_path = os.path.join(os.getcwd(), 'files_rejet')
     user_session = session['login']
     nom_transac = 'details_tickets'
@@ -1201,13 +1321,7 @@ def details_tickets():
     return render_template('details_tickets.html', df=df, paginated_data=paginated_data, pagination=pagination)
 
 
-@app.route('/traitement-ec', methods=['GET', 'POST'])
-def traitement_ec():
-    if request.method == 'POST':
-        # Process defect treatment and validation
-        flash('Traitement des EC effectué avec succès!', 'success')
-        return redirect(url_for('traitement_ec'))
-    return render_template('traitement_ec.html')
+
 
 
 
@@ -1220,7 +1334,7 @@ def traitement_ec():
                                 ########################################################
 
 
-
+# Gerer les types de défauts en listes pour pouvoir les modifier, supprimer ou d'en ajouter
 @app.route('/type_defaut')
 @login_required
 def type_defaut():
@@ -1232,7 +1346,10 @@ def type_defaut():
     db.session.commit()
     return render_template('typedefaut.html',defaut=defaut)
 
+
+# Route pour la modification des types
 @app.route('/modif_typedefaut/<int:id>',methods=['POST'])
+@login_required
 def modiftypedefaut(id):
     types = Type.query.get(id)
     if types:
@@ -1242,7 +1359,9 @@ def modiftypedefaut(id):
 
     return redirect(url_for('type_defaut'))
 
+# Route pour la suppression des types
 @app.route('/delete_type_defaut/<int:id>')
+@login_required
 def delete_type(id):
     types = Type.query.get(id)
     if types:
@@ -1251,7 +1370,9 @@ def delete_type(id):
 
     return redirect(url_for('type_defaut')) 
 
+
 @app.route('/ajouter_type_defaut', methods=['POST'])
+@login_required
 def ajouter_type():
     if request.method == 'POST':
         type_defaut = request.form.get('type_defaut')
@@ -1264,6 +1385,7 @@ def ajouter_type():
         db.session.commit()
 
     return redirect('type_defaut')
+
                         ################################ FIN TYPE ################################
 
 
@@ -1318,6 +1440,7 @@ def data():
     }
 
 @app.route("/vide")
+@login_required
 def func():
     Transaction.truncate()
     return redirect(url_for('transactions'))
@@ -1325,12 +1448,14 @@ def func():
 
 
 @app.route("/annuler")
+@login_required
 def annuler():
     Transaction.annuler()
     return redirect(url_for('transactions'))
 
 
 @app.route('/details_params/<int:detail_paramId>')
+@login_required
 def vue(detail_paramId):
     
     # role = User.query.filter(User.role_id == id).all()
@@ -1338,7 +1463,9 @@ def vue(detail_paramId):
     tickets = Fichier.query.filter_by(defaut="OUI",id=detail_paramId).all()
     return render_template('details_param.html',tickets= tickets,types= types,Type=Type)
 
+
 @app.route('/tous_les_defauts/<int:detail_paramId>')
+@login_required
 def tous_les_defauts(detail_paramId):
     # role = User.query.filter(User.role_id == id).all()
     types = Type.query.all()
@@ -1354,15 +1481,23 @@ def update_type_description():
     new_value = request.json['newValue']
     return jsonify({'success': True})
 
+
+
 @app.route('/update-description', methods=['POST'])
 def update_description():
     new_values = request.json['newValues']
     return jsonify({'success': True})
 
+@app.route('/sonatel-gmec/doc')
+def doc():
+    return render_template('documentation.html')
 
 
 
 ################################################ LANCEMENT DU PROGRAMME
 
 if __name__ == '__main__':
+    print('Serveur Allumé')
     app.run(debug=True)
+    scheduler.start()
+    print('Cron démarré')

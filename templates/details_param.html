@@ -1,5 +1,7 @@
 {% extends "pages/index.html" %}
-
+{% block title %}
+    <title>Details de chaque tickets</title>
+{% endblock %}
 {% block content %}
 <div class="container">
     <div class="card">
@@ -29,6 +31,10 @@
                 <div class="col-6">
                     <label for="floatingInput">Demandeur :</label>
                     <strong>{{ ticket.demandeur }}</strong>
+                </div>
+                <div class="col-6">
+                    <label for="floatingInput">Validation :</label>
+                    <strong>{{ ticket.validation }}</strong>
                 </div>
 
                 <div class="col-6">
@@ -117,23 +123,15 @@
                                         
                                         // Ajouter un écouteur d'événement "change"
                                         select.addEventListener('change', function() {
-                                            // Récupérer la nouvelle valeur sélectionnée
                                             var newValue = select.value;
-                                            
-                                            // Effectuer une action de mise à jour ici, comme envoyer une requête AJAX pour enregistrer la nouvelle valeur
-                                            // Vous pouvez utiliser la bibliothèque JavaScript de votre choix pour effectuer la requête AJAX, par exemple, jQuery.ajax() ou Fetch API
-                                            
-                                            // Exemple avec Fetch API
                                             fetch('/update-type-description', {
                                                 method: 'POST',
-                                                body: JSON.stringify({ newValue: newValue }),  // Envoyer la nouvelle valeur sous forme de JSON
+                                                body: JSON.stringify({ newValue: newValue }),
                                                 headers: {
                                                     'Content-Type': 'application/json'
                                                 }
                                             })
                                             .then(response => {
-                                                // Gérer la réponse de la requête
-                                                // Par exemple, afficher un message de succès ou actualiser la page
                                             })
                                             .catch(error => {
                                                 // Gérer les erreurs de la requête
@@ -258,6 +256,44 @@
                                     <label for="">Commentaires</label>
                                     <textarea class="form-control" name="commentaires" rows="5"
                                         cols="50">{{ ticket.commentaires }}</textarea>
+                                    <br>
+                                    <label for="validation{{ ticket.id }}">Validations:</label>
+                                    <script>
+                                        function afficherChampsCommentaires{{ ticket.id }}() {
+                                            var selectElement = document.getElementById('validationSelect{{ ticket.id }}');
+                                            var commentaireEvaluerDiv = document.getElementById('commentaireEvaluerDiv{{ ticket.id }}');
+                                            var commentaireEvaluerInput = document.getElementById('commentaireEvaluerInput{{ ticket.id }}');
+                                            var commentaireNPlusUnDiv = document.getElementById('commentaireNPlusUnDiv{{ ticket.id }}');
+                                            var commentaireNPlusUnInput = document.getElementById('commentaireNPlusUnInput{{ ticket.id }}');
+                                        
+                                            // Récupérer la valeur sélectionnée dans la liste déroulante
+                                            var selectedValue = selectElement.value;
+                                        
+                                            // Afficher ou masquer les champs de commentaires en fonction de la valeur sélectionnée
+                                            if (selectedValue === 'Invalide') {
+                                                commentaireEvaluerDiv.style.display = 'block';
+                                                commentaireEvaluerInput.setAttribute('required', 'required');
+                                                commentaireNPlusUnDiv.style.display = 'block';
+                                                commentaireNPlusUnInput.setAttribute('required', 'required');
+                                            } else {
+                                                commentaireEvaluerDiv.style.display = 'none';
+                                                commentaireEvaluerInput.removeAttribute('required');
+                                                commentaireNPlusUnDiv.style.display = 'none';
+                                                commentaireNPlusUnInput.removeAttribute('required');
+                                            }
+                                        }
+                                    </script>
+                                    
+                                    <select name="validation" id="validationSelect{{ ticket.id }}" class="form-control" onchange="afficherChampsCommentaires{{ ticket.id }}()">
+                                        <option value="Invalide">Invalide</option>
+                                        <option value="Valide">Valide</option>
+                                    </select>
+                                    <br>
+                                    <div id="commentaireEvaluerDiv{{ ticket.id }}" style="display: none;" required>
+                                        <label for="commentaireEvaluerInput{{ ticket.id }}">Commentaire évalué (justification) <strong style="color: red;">*</strong>:</label>
+                                        <!-- <textarea class="form-control" id="commentaireEvaluerInput{{ ticket.id }}" name="evaluer" rows="5" cols="10" required>{{ ticket.commentaires_evaluer }}</textarea> -->
+                                        <input type="text" name="evaluer" value="{{ ticket.commentaires_evaluer }}" id="commentaireEvaluerInput{{ ticket.id }}" class="form-control" maxlength="200" required>
+                                    </div>
                                     <br>
 
                                     <input class="btn btn-primary" type="submit" value="Valider le défaut">

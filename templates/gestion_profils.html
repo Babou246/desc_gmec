@@ -1,4 +1,7 @@
 {% extends "pages/index.html" %}
+{% block title %}
+<title>Gestions des profils</title>
+{% endblock %}
 <!-- Vendor CSS -->
 <link href="{{ url_for('static', filename='lib/remixicon/fonts/remixicon.css') }}" rel="stylesheet">
 
@@ -32,13 +35,21 @@
                     <div class="card-body">
 
                         <div class="row g-3">
-                            {% if current_user.role.role == "Chef de département" %}
-                            <h5 class="main-subtitle text-dark"><i class="ri-stack-fill"></i> Service:
-                                {{ current_user.role.role }}</h5>
-                            {% else %}
-                            <h5 class="main-subtitle text-dark"><i class="ri-stack-fill"></i> Service:
-                                {{ current_user.service.nom }}</h5>
-                            {% endif %}
+                            {% set unique_roles = [] %}
+
+                            {% for role in role %}
+                                {% if current_user.role.role in ["Chef de département", "Chef de Service", "Collaborateur", "Agent"] %}
+                                    {% set _ = unique_roles.append(role.role.role) %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for unique_role in unique_roles | unique %}
+                                <h5 class="main-subtitle text-dark">
+                                    <i class="ri-stack-fill"></i> Profils:
+                                    {{ unique_role }}
+                                </h5>
+                            {% endfor %}
+
                             <br>
 
                             <br>

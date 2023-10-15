@@ -1,0 +1,228 @@
+<body data-bs-spy="scroll" data-bs-target="#navDocs" data-bs-offset="40">
+
+    <div class="main main-app p-3 p-lg-4">
+
+        {% extends 'pages/index.html' %}
+
+        {% block content %}
+        <div class="container">
+            <div class="col-xl-12">
+
+                <div class="card card-title bg-light">
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <h2 class="main-title mb-3"><i class="ri-slideshow-line"></i> Guide Utilisateur</h2>
+
+                            <div class="accordion accordion-faq" id="accordionExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapseOne" aria-expanded="true"
+                                            aria-controls="collapseOne">
+                                            Menu Principal ?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOne" class="accordion-collapse collapse show"
+                                        aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p>Contient les dashboards des differents Utilisateur sur <strong>Dashboard</strong>, dans la partie <strong>Domaine</strong> qui Contient le chargement des 
+                                            des tickets easy Vista et les <strong>nomad</strong>
+                                            En fin les types de Tickets sont listés sur <strong>Type Défaut</strong> avec la possibilité des modifier, supprimer et d'ajouter permis par le Chef de département
+                                            </p>
+                                            <p>Ils sont listés ainsi :</p>
+                                            <ol>
+                                                <li>Dashboard;</li>
+                                                <li>Domaines;</li>
+                                                <li>Les types de Défauts.</li>
+                                            </ol>
+
+                                            <p>Chaque agent a son tableau de bord qui lui est unique mais il peut évaluer sa performences par-rapport aux agents .</p>
+                                            <p>
+                                                Si c'est le chef de département il peut voit tous les métriques des services et leurs agents 
+                                                Si c'est le Chef de Service il peut voir que les performences de son service et ses agents
+                                                Australian
+                                                payment summary for Australian sourced income.</p>
+                                            <p class="mb-0">This information may be used when completing your tax return
+                                                (and potentially claiming a credit for any taxes paid on your behalf),
+                                                so
+                                                make sure you give them to your tax advisor/accountant.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingTwo">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapseTwo"
+                                            aria-expanded="false" aria-controls="collapseTwo">
+                                            Parametrages ?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseTwo" class="accordion-collapse collapse"
+                                        aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p>Dans cette rubrique on a les <strong>Service</strong>, <strong>Défaut de paramétrage</strong>, et <strong>Chargement de Tckets</strong>.</p>
+                                            <p>A part le Chef de département, Chaque agent ne voit que son service c'est à le contenu du service</p>
+                                            <p><strong>Ajout d'agent par le Chef de Service :</strong></p>
+                                            <ol>
+                                                <li>Les information de l'agent.</li>
+                                                <li>Le service est séléctionner par défaut</li>
+                                            </ol>
+                                            <p>Dans le rubrique Défaut de parametrage : </p>
+                                            <p>
+                                                <strong>Cliquer </strong> sur <strong>Importer</strong> pour telecharger les tickets Easy Vista
+                                            </p>
+                                            <p>
+                                                Aprés chargement des Tckets un popup sera afficher pour lister les Tickets rejetés sous forme 
+                                                de lien vers la pages des tckets rejetés
+                                            </p>
+                                            <p>
+                                                L'ensemble des tickets concernants <strong>l'agent</strong> sont listés à valider
+                                            </p>
+                                            <p>
+                                                <strong>Comment confirmer un Tickets</strong>
+                                            </p>
+                                            <ol>
+                                                <li><strong>Appuyer</strong> sur modifier si le besoin de modification est neccessaire.</li>
+                                                <li>Apres Cliquer sur le bouton <strong>Confirmation</strong></li>
+                                                <li>Si <strong>OUI</strong> le N+1 est averti</li>
+                                                <li>Si <strong>NON</strong> la validation echoue</li>
+                                            </ol>
+                                            <p>
+                                                Dans le rubrique <strong>Chargement Tickets</strong> seul le Chef département en a accés qui charge les Tickets Easy Vista
+
+                                            </p>
+                                            
+                                            <!-- <p class="mb-0"><i><strong>Please note:</strong> You can opt-out of having
+                                                    your
+                                                    tax summary available digitally at any time, as well as disabling
+                                                    2FA,
+                                                    however, we don’t recommend this.</i></p> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingThree">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapseThree"
+                                            aria-expanded="false" aria-controls="collapseThree">
+                                            Administration ?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseThree" class="accordion-collapse collapse"
+                                        aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p><strong>View Profil</strong> contient l'information de l'utilisateur</p>
+                                            <p><i>Avec possibilité de modification de son mail et mot de passe.</i></p>
+                                            <p>
+                                                <strong>Compte</strong> liste des utilisateur qui sont actifs dans le département avec possibilité de modification <br>
+                                                si c'est le Chef de département
+                                            </p>
+                                            <p>
+                                                <strong>Profils</strong> classe les agents par profil c'est à dire par <strong>agent</strong>, <strong>Chef de Service</strong> ou <strong>Chef de département</strong> oubien même <strong>Collaborateur</strong>
+                                            </p>
+                                            <p class="mb-0">
+                                                <Strong>Transactions</Strong> listes les journaux de transactions pour tous les Utilisateurs selon leurs activités,
+                                                le Chef de département peut voir ce que font tous les agents à temps réel, quand à aux agents leurs acitivités uniquement
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingFour">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapseFour"
+                                            aria-expanded="false" aria-controls="collapseFour">
+                                            Comment l'historique marche?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFour" class="accordion-collapse collapse"
+                                        aria-labelledby="headingFour" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p>
+                                                Cette partie concerne le déplacement de l'utilisateur
+                                            </p>
+                                            <p>Si l'utilisateur change de service,
+                                            </p>
+                                            <ul>
+                                                <li>On aura une information concernant les dates</li>
+                                                <li>Et les Services c'est à lancien et le nouveau service</li>
+                                            </ul>
+                                            <p class="mb-0">Cette partie n'est vue que par le Chef de département
+                                                </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingFive">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapseFive"
+                                            aria-expanded="false" aria-controls="collapseFive">
+                                            Corbeille ?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFive" class="accordion-collapse collapse"
+                                        aria-labelledby="headingFive" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p>
+                                                Contients les utilisateurs inactifs dans le département.
+                                               <br> Avec la possibilité de supprimer definitivement.
+                                                <br><i>N'est vu que le Chef de département</i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingSix">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapseSix"
+                                            aria-expanded="false" aria-controls="collapseSix">
+                                            Ajouter des Users?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseSix" class="accordion-collapse collapse"
+                                        aria-labelledby="headingSix" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body pt-0">
+                                            <p>L'ajout des utilisateurs peut se faire par le Chef de département et
+                                                les N+1 de chaque service
+                                                <a href="http://gmec:5000/sonatel-gmec">Site</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- col -->
+
+                    </div><!-- row -->
+
+                </div>
+            </div>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $("#myform").on("submit", function() {
+                        $("#pageloader").fadeIn();
+                    }); //submit
+                }); //document ready
+            </script>
+            <style>
+                #pageloader {
+                    background: rgba(148, 46, 46, 0);
+                    display: none;
+                    height: 20%;
+                    position: fixed;
+                    width: 20%;
+                    z-index: 9999;
+                }
+
+                #pageloader img {
+                    left: 50%;
+                    margin-left: -32px;
+                    margin-top: -32px;
+                    position: absolute;
+                    top: 50%;
+                }
+            </style>
+            {% endblock %}

@@ -5,6 +5,7 @@ set foreign_key_checks=1;
 
 
 ## Migration de la base de données
+pip install Flask-Migrate
 flask dn init
 flask db migrate -m "message"
 flask db upgrade
@@ -38,3 +39,100 @@ CREATE TABLE user_service_history (
     FOREIGN KEY (user_id) REFERENCES user (id),
     FOREIGN KEY (old_service_id) REFERENCES service (id),
     FOREIGN KEY (new_service_id) REFERENCES service (id))
+
+
+
+--- VIEW 
+
+CREATE VIEW note_qualite_interne_mois_par_agent AS
+    SELECT
+        U.id AS agent_id,
+        U.nom_abrege AS agent_nom_abrege,
+        MONTH(F.date_resolution) AS month,
+        YEAR(F.date_resolution) AS year,
+        COUNT(F.id) AS total_tickets,
+        SUM(CASE WHEN F.defaut = 'OUI' THEN 1 ELSE 0 END) AS total_defauts,
+        SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) AS total_tickets_traites,
+        (SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) - SUM(CASE WHEN F.defaut = 'OUI' THEN 1 ELSE 0 END)) / SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) AS note_qualite_interne
+    FROM
+        fichier F
+    JOIN
+        user U ON F.xx_agent_responsable = U.nom_abrege
+    GROUP BY
+        U.id, U.nom_abrege, MONTH(F.date_resolution), YEAR(F.date_resolution);
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+CREATE VIEW note_qualite_interne_mois_par_service AS
+SELECT
+    S.id AS service_id,
+    S.nom AS service_nom,
+    MONTH(F.date_resolution) AS month,
+    YEAR(F.date_resolution) AS year,
+    total_tickets_service.total_tickets AS total_tickets,
+    SUM(CASE WHEN F.defaut = 'OUI' THEN 1 ELSE 0 END) AS total_defauts,
+    SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) AS total_tickets_traites,
+    (SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) - SUM(CASE WHEN F.defaut = 'OUI' THEN 1 ELSE 0 END)) / SUM(CASE WHEN F.confirm = 'OUI' AND F.validation = 'Valide' THEN 1 ELSE 0 END) AS note_qualite_interne
+FROM
+    fichier F
+JOIN
+    user U ON F.xx_agent_responsable = U.nom_abrege
+JOIN
+    service S ON U.service_id = S.id
+JOIN
+    (
+        SELECT
+            U.service_id,
+            COUNT(F.id) AS total_tickets
+        FROM
+            fichier F
+        JOIN
+            user U ON F.xx_agent_responsable = U.nom_abrege
+        GROUP BY
+            U.service_id
+    ) AS total_tickets_service ON S.id = total_tickets_service.service_id
+GROUP BY
+    S.id, S.nom, MONTH(F.date_resolution), YEAR(F.date_resolution), total_tickets_service.total_tickets;
+
+---------------------------------------------------------------------------------------------------------------------------------
+CREATE VIEW vw_quality_internal_score AS
+SELECT
+    u.id AS agent_id,
+    u.nom_abrege AS agent_name,
+    u.service_id AS service_id,
+    s.nom AS service_name,
+    COUNT(f.id,f.confirm="OUI",f.validation="Valide") AS TT,
+    SUM(CASE WHEN f.defaut = 'OUI' THEN 1 ELSE 0 END) AS DF,
+    (COUNT(f.id,f.confirm="OUI",f.validation="Valide") - SUM(CASE WHEN f.defaut = 'OUI' THEN 1 ELSE 0 END)) / COUNT(f.id,f.confirm="OUI",f.validation="Valide") AS note_qualite_interne
+FROM
+    user u
+LEFT JOIN fichier f ON u.nom_abrege = f.xx_agent_responsable
+LEFT JOIN service s ON u.service_id = s.id
+GROUP BY
+    u.id, u.nom_abrege, u.service_id, s.nom;
+--------------------------------------------------------------------------------------------------------------------------------
+CREATE VIEW quality_internal_note_view AS
+SELECT
+    u.id AS user_id,
+    u.nom AS user_name,
+    s.id AS service_id,
+    s.nom AS service_name,
+    s.sigle AS service_sigle,
+    SUM(CASE WHEN f.validation = 'Valide' THEN 1 ELSE 0 END) AS TT,
+    SUM(CASE WHEN f.defaut = 'OUI' THEN 1 ELSE 0 END) AS DF,
+    CASE
+        WHEN SUM(CASE WHEN f.validation = 'Valide' THEN 1 ELSE 0 END) = 0 THEN 0
+        ELSE (1.0 - (SUM(CASE WHEN f.defaut = 'OUI' THEN 1 ELSE 0 END) / SUM(CASE WHEN f.validation = 'Valide' THEN 1 ELSE 0 END)))
+    END AS Note_Qualité_Interne
+FROM
+    user u
+JOIN
+    service s ON u.service_id = s.id
+LEFT JOIN
+    fichier f ON u.nom_abrege = f.xx_agent_responsable
+GROUP BY
+    u.id, s.id
+
+
+
+#UPDATE `user` SET nom_abrege = 'ISFAC_Talibouya' WHERE nom_abrege = 'ISFAC_ISFAC_Talibouya'

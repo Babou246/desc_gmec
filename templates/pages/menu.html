@@ -1,12 +1,9 @@
 
-  {% extends 'pages/index.html' %}
-
+{% extends 'pages/index.html' %}
+{% block title %}
+  <title>Tableau de Bords</title>
+{% endblock %}
   {% block content %}
-
-
-
-
-  
   <div class="content-body">
    
     <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
@@ -25,7 +22,7 @@
                     </li>
                     <li class="list-inline-item mg-l-10">
                       <span class="d-inline-block wd-7 ht-7 bg-df-2 rounded-circle mg-r-5"></span>
-                      Solved<span class="d-none d-md-inline"> Tickets</span>
+                      Solved<span class="d-none d-md-inline"> Tickets</span>  
                     </li>
                     <li class="list-inline-item mg-l-10">
                       <span class="d-inline-block wd-7 ht-7 bg-primary rounded-circle mg-r-5"></span>
@@ -41,7 +38,22 @@
                 <div class="card-footer pd-y-15 pd-x-20">
                   <div class="row row-sm">
                     <div class="col-6 col-sm-4 col-md-3 col-lg">
-                      <h4 class="tx-normal tx-rubik mg-b-10">156</h4>
+                      {% if current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
+                        {% for agent in agents %}
+                          {% if current_user.nom_abrege == agent.agent_nom_abrege %}
+                            <h4 class="tx-normal tx-rubik mg-b-10">{{ agent.total_tickets }} </h4>
+                          {% endif %}
+                        {% endfor %}
+                      {% elif current_user.role.role == "Chef de Service" %}
+                        {% for tt in  total_tickets_traites_ser %}
+                        <!-- {{ tt }} -->
+                          {% if current_user.service.nom == tt.service_nom %}
+                              <h4 class="tx-normal tx-rubik mg-b-10">{{ tt.total_tickets }}</h4>
+                          {% endif %}
+                        {% endfor %}
+                      {% elif current_user.role.role == "Chef de département" %}
+                        <h4 class="tx-normal tx-rubik mg-b-10">{{ total_tickets }}</h4>
+                      {% endif %}
                       <div class="progress ht-2 mg-b-10">
                         <div class="progress-bar wd-100p bg-df-2" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                       </div>
@@ -49,7 +61,18 @@
                       <p class="tx-10 tx-color-03 mg-b-0"><span class="tx-medium tx-success d-inline-flex align-items-center">1.2% <ion-icon name="arrow-up-outline" class="mg-b-1"></ion-icon></span> than yesterday</p>
                     </div><!-- col -->
                     <div class="col-6 col-sm-4 col-md-3 col-lg">
-                      <h4 class="tx-normal tx-rubik mg-b-10">86</h4>
+                      {% if current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
+                        <h4 class="tx-normal tx-rubik mg-b-10">{{ Ticket_solved_user }}</h4>
+                      {% elif current_user.role.role == "Chef de Service" %}
+                        {% for tt in  total_tickets_traites_ser %}
+                        <!-- {{ tt }} -->
+                          {% if current_user.service.nom == tt.service_nom %}
+                              <h4 class="tx-normal tx-rubik mg-b-10">{{ tt.total_tickets_traites }}</h4>
+                          {% endif %}
+                        {% endfor %}
+                      {% elif current_user.role.role == "Chef de département" %}
+                        <h4 class="tx-normal tx-rubik mg-b-10">{{ total_tickets_traites }}</h4>
+                      {% endif %}
                       <div class="progress ht-2 mg-b-10">
                         <div class="progress-bar wd-85p bg-df-2" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
                       </div>
@@ -57,7 +80,14 @@
                       <p class="tx-10 tx-color-03 mg-b-0"><span class="tx-medium tx-danger d-inline-flex align-items-center">-0.6% <ion-icon name="arrow-down-outline" class="mg-b-1"></ion-icon></span> than yesterday</p>
                     </div><!-- col -->
                     <div class="col-6 col-sm-4 col-md-3 col-lg mg-t-20 mg-sm-t-0">
-                      <h4 class="tx-normal tx-rubik mg-b-10">27</h4>
+                      {% if current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
+                      <h4 class="tx-normal tx-rubik mg-b-10">{{ Ticket_non_solved_user }}</h4>
+                      {% elif current_user.role.role == "Chef de Service" %}
+                      <h4 class="tx-normal tx-rubik mg-b-10">{{ Ticket_non_solved_service }}</h4>
+                      {% elif current_user.role.role == "Chef de département" %}
+                      <h4 class="tx-normal tx-rubik mg-b-10">{{ Ticket_non_solved }}</h4>
+                      {% endif %}
+
                       <div class="progress ht-2 mg-b-10">
                         <div class="progress-bar wd-25p bg-df-2" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                       </div>
@@ -65,11 +95,24 @@
                       <p class="tx-10 tx-color-03 mg-b-0"><span class="tx-medium tx-success d-inline-flex align-items-center">0.3% <ion-icon name="arrow-up-outline" class="mg-b-1"></ion-icon></span> than yesterday</p>
                     </div><!-- col -->
                     <div class="col-6 col-sm-4 col-md-3 col-lg mg-t-20 mg-md-t-0">
-                      <h4 class="tx-normal tx-rubik mg-b-10">45</h4>
+                      {% if current_user.role.role == "Chef de Service" or current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
+                        {% for nqi in nqi_services %}
+                        <!-- {{ nqi}} -->
+                          {% if current_user.nom_abrege == nqi.agent_nom_abrege %}
+                            <h4 class="tx-normal tx-rubik mg-b-10">{{ nqi.note_qualite_interne*100|round(1) }}%</h4>
+                          {% endif %}
+                        {% endfor %}
+                      {% elif current_user.role.role == "Chef de département" %}
+                        {% if nqi_dep is not none and nqi_dep[0][0] is not none %}
+                          <h4 class="tx-normal tx-rubik mg-b-10">{{ (nqi_dep[0][0]|round(2))*100 }}%</h4>
+                        {% else %}
+                          <p>N/A</p>
+                        {% endif %}
+                      {% endif %}
                       <div class="progress ht-2 mg-b-10">
                         <div class="progress-bar wd-45p bg-df-2" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
                       </div>
-                      <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 tx-color-02 mg-b-2">Open Tickets</h6>
+                      <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 tx-color-02 mg-b-2">Note Qualité Interne</h6>
                       <p class="tx-10 tx-color-03 mg-b-0"><span class="tx-medium tx-success d-inline-flex align-items-center">0.3% <ion-icon name="arrow-up-outline" class="mg-b-1"></ion-icon></span> than yesterday</p>
                     </div><!-- col -->
                     <div class="col-6 col-sm-4 col-md-3 col-lg mg-t-20 mg-lg-t-0">
@@ -97,11 +140,30 @@
                 <div class="col-md-5 mg-t-10 mg-md-t-0">
                   <div class="card">
                     <div class="card-header pd-b-0 pd-t-20 bd-b-0">
-                      <h6 class="mg-b-0">Customer Satisfaction</h6>
+                      <h6 class="mg-b-0">Satisfaction Département</h6>
                     </div><!-- card-header -->
                     <div class="card-body pd-y-10">
                       <div class="d-flex align-items-baseline tx-rubik">
-                        <h1 class="tx-40 lh-1 tx-normal tx-spacing--2 mg-b-5 mg-r-5">9.8</h1>
+                        {% if current_user.role.role == "Chef de Service" %}
+                            {% for service in service %}
+                            {% if service.service_nom == current_user.service.nom  %}
+                            <h1 class="tx-40 lh-1 tx-normal tx-spacing--2 mg-b-5 mg-r-5">{{ (service.note_qualite_interne*100)|round(1) }}</h1>
+                            {% endif %}
+                            <!-- <h1 class="tx-40 lh-1 tx-normal tx-spacing--2 mg-b-5 mg-r-5">9.8</h1> -->
+                            {% endfor %}
+                        {% elif current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
+                            {% for service in agents %}
+                              {% if service.agent_nom_abrege == current_user.nom_abrege  %}
+                              <h1 class="tx-40 lh-1 tx-normal tx-spacing--2 mg-b-5 mg-r-5">{{ (service.note_qualite_interne*100)|round(1) }}</h1>
+                              {% endif %}
+                            {% endfor %}
+                        {% elif current_user.role.role == "Chef de département" %}
+                          {% if nqi_dep is not none and nqi_dep[0][0] is not none %}
+                            <h4 class="tx-normal tx-rubik mg-b-10">{{ (nqi_dep[0][0]|round(2))*100 }}%</h4>
+                          {% else %}
+                            <p>N/A</p>
+                          {% endif %}
+                        {% endif %}
                         <p class="tx-11 tx-color-03 mg-b-0"><span class="tx-medium tx-success d-inline-flex align-items-center">1.6% <ion-icon name="arrow-up-outline"></ion-icon></span></p>
                       </div>
                       <h6 class="tx-uppercase tx-spacing-1 tx-semibold tx-10 tx-color-02 mg-b-15">Performance Score</h6>
@@ -117,26 +179,73 @@
 
                       <table class="table-dashboard-two">
                         <tbody>
-                          <tr>
-                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-primary"></div></td>
-                            <td class="tx-medium">Excellent</td>
-                            <td class="text-right">3,007</td>
-                            <td class="text-right">50%</td>
-                          </tr>
-                          <tr>
-                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-success"></div></td>
-                            <td class="tx-medium">Very Good</td>
+                          
+                          {% for service in service %}
+                              <tr>
+                                {% if current_user.role.role == "Chef de département" %}
+                                  {% if (service.note_qualite_interne*100) > 80 %}
+                                  <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-success"></div></td>
+                                  {% elif (service.note_qualite_interne*100) <= 80 %}
+                                  <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-primary"></div></td>
+                                  {% elif (service.note_qualite_interne*100) <= 60 %}
+                                  <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-warning"></div></td>
+                                  {% elif (service.note_qualite_interne*100) <= 10 %}
+                                  
+                                  <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-pink"></div></td>
+                                  {% endif %}
+                                  <td class="tx-medium">{{ service.service_nom }}</td>
+                                  <td class="text-right">{{ service.total_tickets }}</td>
+                                  <td class="text-right">{{ (service.note_qualite_interne*100)|round(1) }}%</td>
+                                {% elif service.service_nom == current_user.service.nom  and current_user.role.role == "Chef de Service" %}
+                                    {% if (service.note_qualite_interne*100) > 80 %}
+                                    <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-success"></div></td>
+                                    {% elif (service.note_qualite_interne*100) <= 80 %}
+                                    <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-primary"></div></td>
+                                    {% elif (service.note_qualite_interne*100) <= 60 %}
+                                    <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-warning"></div></td>
+                                    {% elif (service.note_qualite_interne*100) <= 10 %}
+                                    
+                                    <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-pink"></div></td>
+                                    {% endif %}
+                                    <td class="tx-medium">{{ service.service_nom }}</td>
+                                    <td class="text-right">{{ service.total_tickets }}</td>
+                                    <td class="text-right">{{ (service.note_qualite_interne*100)|round(1) }}%</td>
+                                
+                                {% endif %}
+                              </tr>
+                            
+                            {% endfor %}
+                            {% for agent in agents %}
+                              {% if current_user.role.role == "Agent" or (current_user.role.role == "Chef de Service") or current_user.role.role == "Collaborateur" %}
+                                {% if agent.agent_nom_abrege.split('_')[0] == current_user.service.nom %}
+                                    <tr>
+                                        {% if (agent.note_qualite_interne*100) > 80 %}
+                                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-success"></div></td>
+                                        {% elif (agent.note_qualite_interne*100) <= 80 and (agent.note_qualite_interne*100) > 60 %}
+                                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-primary"></div></td>
+                                        {% elif (agent.note_qualite_interne*100) <= 60 and (agent.note_qualite_interne*100) > 10 %}
+                                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-warning"></div></td>
+                                        {% elif (agent.note_qualite_interne*100) <= 10 %}
+                                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-pink"></div></td>
+                                        {% endif %}
+                                        <td class="tx-medium">{{ agent.agent_nom_abrege }}</td>
+                                        <td class="text-right">{{ agent.total_tickets }}</td>
+                                        <td class="text-right">{{ (agent.note_qualite_interne*100)|round(1) }}%</td>
+                                    </tr>
+                                {% endif %}
+                              {% endif %}
+                          {% endfor %}
+                          <!-- <tr>
+                            <td class="tx-medium">ISCL</td>
                             <td class="text-right">1,674</td>
                             <td class="text-right">25%</td>
                           </tr>
                           <tr>
-                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-warning"></div></td>
                             <td class="tx-medium">Good</td>
                             <td class="text-right">125</td>
                             <td class="text-right">6%</td>
                           </tr>
                           <tr>
-                            <td><div class="wd-12 ht-12 rounded-circle bd bd-3 bd-pink"></div></td>
                             <td class="tx-medium">Fair</td>
                             <td class="text-right">98</td>
                             <td class="text-right">5%</td>
@@ -152,7 +261,7 @@
                             <td class="tx-medium">Very Poor</td>
                             <td class="text-right">81</td>
                             <td class="text-right">4%</td>
-                          </tr>
+                          </tr> -->
                         </tbody>
                       </table>
                     </div><!-- card-body -->
@@ -168,42 +277,46 @@
                     </div><!-- card-header -->
                     <div class="card-body pd-20">
                       <ul class="activity tx-13">
-                        <li class="activity-item">
-                          <div class="activity-icon bg-primary-light tx-primary">
-                            <i data-feather="clock"></i>
-                          </div>
-                          <div class="activity-body">
-                            <p class="mg-b-2"><strong>Louise</strong> added a time entry to the ticket <a href="" class="link-02"><strong>Sales Revenue</strong></a></p>
-                            <small class="tx-color-03">2 hours ago</small>
-                          </div><!-- activity-body -->
-                        </li><!-- activity-item -->
-                        <li class="activity-item">
-                          <div class="activity-icon bg-success-light tx-success">
-                            <i data-feather="paperclip"></i>
-                          </div>
-                          <div class="activity-body">
-                            <p class="mg-b-2"><strong>Kevin</strong> added new attachment to the ticket <a href="" class="link-01"><strong>Software Bug Reporting</strong></a></p>
-                            <small class="tx-color-03">5 hours ago</small>
-                          </div><!-- activity-body -->
-                        </li><!-- activity-item -->
-                        <li class="activity-item">
-                          <div class="activity-icon bg-warning-light tx-orange">
-                            <i data-feather="share"></i>
-                          </div>
-                          <div class="activity-body">
-                            <p class="mg-b-2"><strong>Natalie</strong> reassigned ticket <a href="" class="link-02"><strong>Problem installing software</strong></a> to <strong>Katherine</strong></p>
-                            <small class="tx-color-03">8 hours ago</small>
-                          </div><!-- activity-body -->
-                        </li><!-- activity-item -->
-                        <li class="activity-item">
+                        {% for trans in trans %}
+                          <li class="activity-item">
+                            <div class="activity-icon bg-primary-light tx-primary">
+                              <i data-feather="clock"></i>
+                            </div>
+                            <div class="activity-body">
+                              <p class="mg-b-2"><strong>{{ trans. users_transac }}</strong> added a time entry to the ticket <a href="" class="link-02"><strong>Sales Revenue</strong></a></p>
+                              <small class="tx-color-03">{{ trans.heure }}2 hours ago</small>
+                            </div><!-- activity-body -->
+                          </li><!-- activity-item -->
+                          <!-- <li class="activity-item">
+                            <div class="activity-icon bg-success-light tx-success">
+                              <i data-feather="paperclip"></i>
+                            </div>
+                            <div class="activity-body">
+                              <p class="mg-b-2"><strong>Kevin</strong> added new attachment to the ticket <a href="" class="link-01"><strong>Software Bug Reporting</strong></a></p>
+                              <small class="tx-color-03">5 hours ago</small>
+                            </div>
+                          </li>
+                        
+                          <li class="activity-item">
+                            <div class="activity-icon bg-warning-light tx-orange">
+                              <i data-feather="share"></i>
+                            </div>
+                            <div class="activity-body">
+                              <p class="mg-b-2"><strong>Natalie</strong> reassigned ticket <a href="" class="link-02"><strong>Problem installing software</strong></a> to <strong>Katherine</strong></p>
+                              <small class="tx-color-03">8 hours ago</small>
+                            </div>
+                          </li> -->
+                        {% endfor %}
+                        <!-- activity-item -->
+                        <!-- <li class="activity-item">
                           <div class="activity-icon bg-pink-light tx-pink">
                             <i data-feather="plus-circle"></i>
                           </div>
                           <div class="activity-body">
                             <p class="mg-b-2"><strong>Katherine</strong> submitted new ticket <a href="" class="link-02"><strong>Payment Method</strong></a></p>
                             <small class="tx-color-03">Yesterday</small>
-                          </div><!-- activity-body -->
-                        </li><!-- activity-item -->
+                          </div>
+                        </li>
                         <li class="activity-item">
                           <div class="activity-icon bg-indigo-light tx-indigo">
                             <i data-feather="settings"></i>
@@ -211,8 +324,9 @@
                           <div class="activity-body">
                             <p class="mg-b-2"><strong>Katherine</strong> changed settings to ticket category <a href="" class="link-02"><strong>Payment &amp; Invoice</strong></a></p>
                             <small class="tx-color-03">2 days ago</small>
-                          </div><!-- activity-body -->
-                        </li><!-- activity-item -->
+                          </div>
+                        </li> -->
+                        <!-- activity-item -->
                       </ul><!-- activity -->
                     </div><!-- card-body -->
                   </div><!-- card -->
@@ -223,62 +337,59 @@
                       <h6 class="mg-b-0">Agent Performance Points</h6>
                     </div><!-- card-header -->
                     <div class="card-body pd-t-25">
+                      <!--  -->
+                      {% for agent in agents %}
+                      {% if agent.agent_nom_abrege.split('_')[0] == current_user.service.nom  and current_user.role.role == "Chef de Service" %}
+                      
                       <div class="media">
                         <div class="avatar"><img src="https://placehold.co/500" class="rounded-circle" alt=""></div>
                         <div class="media-body mg-l-15">
-                          <h6 class="tx-13 mg-b-2">Katherine Lumaad</h6>
-                          <p class="tx-color-03 tx-12 mg-b-10">Technical Support</p>
+                          <h6 class="tx-13 mg-b-2">{{ agent.agent_nom_abrege }}</h6>
+                          <p class="tx-color-03 tx-12 mg-b-10">{{ agent.total_defauts }} défauts</p>
                           <div class="progress ht-4 op-7 mg-b-5">
-                            <div class="progress-bar wd-85p" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                            {% if 0 <= agent.total_tickets < 55 %}
+                            <div class="progress-bar wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            {% elif 55 <= agent.total_tickets < 65 %}
+                            <div class="progress-bar bg-success wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            {% elif 65 <= agent.total_tickets < 101 %}
+                            <div class="progress-bar bg-pink wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            {% endif %}
                           </div>
                           <div class="d-flex justify-content-between tx-12">
                             <span class="tx-color-03">Executive Level</span>
-                            <strong class="tx-medium">12,312 points</strong>
+                            <strong class="tx-medium">{{ agent.total_tickets }} tickets</strong>
                           </div>
                         </div><!-- media-body -->
                       </div><!-- media -->
-                      <div class="media mg-t-25">
-                        <div class="avatar"><img src="https://placehold.co/500" class="rounded-circle" alt=""></div>
-                        <div class="media-body mg-l-15">
-                          <h6 class="tx-13 mg-b-2">Adrian Monino</h6>
-                          <p class="tx-color-03 tx-12 mg-b-10">Sales Representative</p>
-                          <div class="progress ht-4 op-7 mg-b-5">
-                            <div class="progress-bar bg-success wd-60p" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <div class="d-flex justify-content-between tx-12">
-                            <span class="tx-color-03">Master Level</span>
-                            <strong class="tx-medium">10,044 points</strong>
-                          </div>
-                        </div><!-- media-body -->
-                      </div><!-- media -->
-                      <div class="media mg-t-25">
-                        <div class="avatar"><img src="https://placehold.co/500" class="rounded-circle" alt=""></div>
-                        <div class="media-body mg-l-15">
-                          <h6 class="tx-13 mg-b-2">Rolando Paloso</h6>
-                          <p class="tx-color-03 tx-12 mg-b-10">Software Support</p>
-                          <div class="progress ht-4 op-7 mg-b-5">
-                            <div class="progress-bar bg-indigo wd-45p" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <div class="d-flex justify-content-between tx-12">
-                            <span class="tx-color-03">Super Elite Level</span>
-                            <strong class="tx-medium">7,500 points</strong>
-                          </div>
-                        </div><!-- media-body -->
-                      </div><!-- media -->
-                      <div class="media mg-t-20">
-                        <div class="avatar"><img src="https://placehold.co/500" class="rounded-circle" alt=""></div>
-                        <div class="media-body mg-l-15">
-                          <h6 class="tx-13 mg-b-2">Dyanne Rose Aceron</h6>
-                          <p class="tx-color-03 tx-12 mg-b-10">Sales Representative</p>
-                          <div class="progress ht-4 op-7 mg-b-5">
-                            <div class="progress-bar bg-pink wd-40p" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <div class="d-flex justify-content-between tx-12">
-                            <span class="tx-color-03">Elite Level</span>
-                            <strong class="tx-medium">6,870 points</strong>
-                          </div>
-                        </div><!-- media-body -->
-                      </div><!-- media -->
+                      {% endif %}
+                      {% endfor %}
+                      {% if current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" or  current_user.role.role == "Chef de département" %}
+
+                        {% for agent in order_by %}
+                        <div class="media">
+                          <div class="avatar"><img src="https://placehold.co/500" class="rounded-circle" alt=""></div>
+                          <div class="media-body mg-l-15">
+                            <h6 class="tx-13 mg-b-2">{{ agent.agent_nom_abrege }}</h6>
+                            <p class="tx-color-03 tx-12 mg-b-10">{{ agent.total_defauts }} défauts</p>
+                            <div class="progress ht-4 op-7 mg-b-5">
+                              {% if 0 <= agent.total_tickets < 55 %}
+                              <div class="progress-bar wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                              {% elif 55 <= agent.total_tickets <= 65 %}
+                              <div class="progress-bar bg-pink wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                              {% elif 65 <= agent.total_tickets < 101 %}
+                              <div class="progress-bar bg-success wd-{{ agent.total_tickets }}p" role="progressbar" aria-valuenow="{{ agent.total_tickets }}" aria-valuemin="0" aria-valuemax="100"></div>
+                              {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between tx-12">
+                              <span class="tx-color-03">Executive Level</span>
+                              <strong class="tx-medium">{{ agent.total_tickets }} tickets</strong>
+                            </div>
+                          </div><!-- media-body -->
+                        </div><!-- media -->
+                        {% endfor %}
+                      
+                      {% endif %}
+                      <!--  -->
                     </div><!-- card-body -->
                   </div><!-- card -->
                 </div>
@@ -333,10 +444,10 @@
                     <div class="card-body pd-0 pos-relative">
                       <div class="pos-absolute t-10 l-20 z-index-10">
                         <div class="d-flex align-items-baseline">
-                          <h1 class="tx-normal tx-rubik mg-b-0 mg-r-5">165</h1>
+                          <h1 class="tx-normal tx-rubik mg-b-0 mg-r-5">{{ tous_tickets }}</h1>
                           <p class="tx-11 tx-color-03 mg-b-0"><span class="tx-medium tx-success d-inline-flex align-items-center">0.3% <ion-icon name="arrow-down-outline" class="mg-b-2"></ion-icon></span> than last month</p>
                         </div>
-                        <p class="tx-12 tx-color-03 wd-60p">The total number of complaints that have been received.</p>
+                        <p class="tx-12 tx-color-03 wd-60p">Le nombre de total de tickets reçus dans ce mois.</p>
                       </div>
 
                       <div class="chart-sixteen">
@@ -352,6 +463,7 @@
                       <p class="tx-12 tx-color-03 mg-b-0">Measures the quality or your support team’s efforts.</p>
                     </div><!-- card-header -->
                     <div class="card-body pd-0">
+                      <!-- Service Perf -->
                       <div class="pd-t-10 pd-b-15 pd-x-20 d-flex align-items-baseline">
                         <h1 class="tx-normal tx-rubik mg-b-0 mg-r-5">4.2</h1>
                         <div class="tx-18">
@@ -363,66 +475,149 @@
                         </div>
                       </div>
                       <div class="list-group list-group-flush tx-13">
-                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
-                          <strong class="tx-12 tx-rubik">5.0</strong>
-                          <div class="tx-16 mg-l-10 mg-t-5">
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                        <!-- Par agent -->
+                        {% for agent in QI %}
+                        {% if agent.agent_nom_abrege.split('_')[0] == current_user.service.nom  and current_user.role.role == "Chef de Service" %}
+
+                          {% if agent.note_qualite_interne >0.90 %}
+                          <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">5.0</strong>
+                            <div class="tx-16 mg-l-10 mg-t-5">
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                            </div>
+                            <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                            <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
                           </div>
-                          <div class="mg-l-auto tx-rubik tx-color-02">4,230</div>
-                          <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">58%</div>
-                        </div>
-                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
-                          <strong class="tx-12 tx-rubik">4.0</strong>
-                          <div class="tx-16 mg-l-10 mg-t-5">
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                          {% elif agent.note_qualite_interne >0.80 %}
+                          <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">4.0</strong>
+                            <div class="tx-16 mg-l-10 mg-t-5">
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                            </div>
+                            <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                            <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
                           </div>
-                          <div class="mg-l-auto tx-rubik tx-color-02">1,416</div>
-                          <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">24%</div>
-                        </div>
-                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
-                          <strong class="tx-12 tx-rubik">3.0</strong>
-                          <div class="tx-16 mg-l-10 mg-t-5">
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                          {% elif agent.note_qualite_interne >0.60 %}
+                          <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">3.0</strong>
+                            <div class="tx-16 mg-l-10 mg-t-5">
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                            </div>
+                            <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                            <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
                           </div>
-                          <div class="mg-l-auto tx-rubik tx-color-02">980</div>
-                          <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">16%</div>
-                        </div>
-                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
-                          <strong class="tx-12 tx-rubik">2.0</strong>
-                          <div class="tx-16 mg-l-10 mg-t-5">
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                          {% elif agent.note_qualite_interne >0.40 %}
+                          <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                            <strong class="tx-12 tx-rubik">2.0</strong>
+                            <div class="tx-16 mg-l-10 mg-t-5">
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                            </div>
+                            <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                            <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
                           </div>
-                          <div class="mg-l-auto tx-rubik tx-color-02">401</div>
-                          <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">8%</div>
-                        </div>
-                        <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center bg-transparent">
-                          <strong class="tx-12 tx-rubik">1.0</strong>
-                          <div class="tx-16 mg-l-10 mg-t-5">
-                            <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
-                            <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                          {% elif agent.note_qualite_interne < 0.40  %}
+                          <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center bg-transparent">
+                            <strong class="tx-12 tx-rubik">1.0</strong>
+                            <div class="tx-16 mg-l-10 mg-t-5">
+                              <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                            </div>
+                            <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                            <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne }}</div>
                           </div>
-                          <div class="mg-l-auto tx-rubik tx-color-02">798</div>
-                          <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">12%</div>
-                        </div>
+                          {% endif %}
+
+                        {% elif current_user.role.role == "Chef de département" %}
+
+                            {% if agent.note_qualite_interne >0.90 %}
+                            <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                              <strong class="tx-12 tx-rubik">5.0</strong>
+                              <div class="tx-16 mg-l-10 mg-t-5">
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                              </div>
+                              <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                              <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
+                            </div>
+                            {% elif agent.note_qualite_interne >0.80 %}
+                            <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                              <strong class="tx-12 tx-rubik">4.0</strong>
+                              <div class="tx-16 mg-l-10 mg-t-5">
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              </div>
+                              <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                              <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
+                            </div>
+                            {% elif agent.note_qualite_interne >0.60 %}
+                            <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                              <strong class="tx-12 tx-rubik">3.0</strong>
+                              <div class="tx-16 mg-l-10 mg-t-5">
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              </div>
+                              <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                              <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
+                            </div>
+                            {% elif agent.note_qualite_interne >0.40 %}
+                            <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center">
+                              <strong class="tx-12 tx-rubik">2.0</strong>
+                              <div class="tx-16 mg-l-10 mg-t-5">
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              </div>
+                              <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                              <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne}}</div>
+                            </div>
+                            {% else %}
+                            <div class="list-group-item pd-y-5 pd-x-20 d-flex align-items-center bg-transparent">
+                              <strong class="tx-12 tx-rubik">1.0</strong>
+                              <div class="tx-16 mg-l-10 mg-t-5">
+                                <ion-icon name="star" class="lh-0 tx-orange"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                                <ion-icon name="star" class="lh-0 tx-gray-300"></ion-icon>
+                              </div>
+                              <div class="mg-l-auto tx-rubik tx-color-02">{{ agent.agent_nom_abrege }}</div>
+                              <div class="mg-l-20 tx-rubik tx-color-03 wd-10p text-right">{{ agent.note_qualite_interne }}</div>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+
+                        
+                        {% endfor %}
                       </div><!-- list-group -->
                     </div><!-- card-body -->
                   </div><!-- card -->
@@ -514,6 +709,4 @@
     <script src="../static/assets/js/dashforge.settings.js"></script>
 
 
-  </body>
-    {% endblock content %}
-</html>
+{% endblock content %}

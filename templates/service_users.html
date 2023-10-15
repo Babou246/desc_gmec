@@ -32,13 +32,20 @@
                     <div class="card-body">
 
                         <div class="row g-3">
-                            {% if current_user.role.role == "Chef de département" %}
-                            <h5 class="main-subtitle text-dark"><i class="ri-stack-fill"></i> Service:
-                                {{ current_user.role.role }}</h5>
-                            {% else %}
-                            <h5 class="main-subtitle text-dark"><i class="ri-stack-fill"></i> Service:
-                                {{ current_user.service.nom }}</h5>
-                            {% endif %}
+                            {% set unique_roles = [] %}
+
+                            {% for user in users_service %}
+                                {% if current_user.role.role in ["Chef de département", "Chef de Service", "Collaborateur", "Agent"] %}
+                                    {% set _ = unique_roles.append(user.service.nom) %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for unique_role in unique_roles | unique %}
+                                <h5 class="main-subtitle text-dark">
+                                    <i class="ri-stack-fill"></i> Services:
+                                    {{ unique_role }} 
+                                </h5>
+                            {% endfor %}
                             <br>
 
                             <br>
@@ -99,13 +106,13 @@
                                                 <tr>
                                                     <!-- <td>{{ user.id }}</td> -->
                                                     {% if user.role.role == "Chef de Service" %}
-                                                        <td style="background-color: aqua;">{{ user.matricule }}</td>
-                                                        <td style="background-color: aqua;">{{ user.prenom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.nom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.date_debut }}</td>
-                                                        <td style="background-color: aqua;">{{ user.service.nom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.email }}- (<strong>{{ user.role.role }}</strong>)</td>
-                                                        <td style="background-color: aqua;">{{ user.state }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.matricule }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.prenom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.nom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.date_debut }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.service.nom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.email }}- (<strong>{{ user.role.role }}</strong>)</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.state }}</td>
                                                         {% else %}
                                                         <td>{{ user.matricule }}</td>
                                                         <td>{{ user.prenom }}</td>
@@ -146,13 +153,13 @@
                                                 <tr>
                                                     <!-- <td>{{ user.id }}</td> -->
                                                     {% if user.role.role == "Chef de Service" %}
-                                                        <td style="background-color: aqua;">{{ user.matricule }}</td>
-                                                        <td style="background-color: aqua;">{{ user.prenom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.nom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.date_debut }}</td>
-                                                        <td style="background-color: aqua;">{{ user.service.nom }}</td>
-                                                        <td style="background-color: aqua;">{{ user.email }}- (<strong>Chef de Service</strong>)</td>
-                                                        <td style="background-color: aqua;">{{ user.state }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.matricule }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.prenom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.nom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.date_debut }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.service.nom }}</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.email }}- (<strong>Chef de Service</strong>)</td>
+                                                        <td style="background-color: rgb(195, 238, 238);">{{ user.state }}</td>
                                                         {% else %}
                                                         <td>{{ user.matricule }}</td>
                                                         <td>{{ user.prenom }}</td>

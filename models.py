@@ -10,6 +10,8 @@ from sqlalchemy import event,DDL
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm.attributes import get_history
 from datetime import datetime
+from sqlalchemy import create_engine, text
+
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -17,7 +19,7 @@ bcrypt = Bcrypt(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://babou:passer@localhost/yeswecan'
 app.secret_key = 'your_secret_key'
 db = SQLAlchemy(app)
-
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,8 +40,7 @@ class User(UserMixin, db.Model):
     
     role_user = db.relationship('Role', backref='users', lazy=True)
 
-    def __init__(self, id,matricule, login, prenom, nom, role, sigle_service, service_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
-        self.id=id
+    def __init__(self,matricule, login, prenom, nom, role, sigle_service, service_id, state, email, nom_abrege, date_debut, date_fin=None, password=None):
         self.matricule = matricule
         self.login = login
         self.prenom = prenom
@@ -92,6 +93,7 @@ class Service(db.Model):
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     role = db.Column(db.String(30), unique=True)
+    description = db.Column(db.String(255), unique=True)
     users_role = db.relationship('User', backref='role', lazy=True)
 
 
@@ -383,9 +385,6 @@ class Transaction(db.Model):
         try:
             # Commencer une transaction
             db.session.begin()
-
-            # Effectuer des opérations de rollback spécifiques ici
-            # Par exemple, restaurer les enregistrements supprimés
 
             # Annuler la transaction
             db.session.rollback()

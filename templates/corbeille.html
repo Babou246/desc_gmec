@@ -1,7 +1,9 @@
   {% block css %}{% endblock css %}
 
   {% extends 'pages/index.html' %}
-
+  {% block title %}
+  <title>Poubelle</title>
+  {% endblock %}
   {% block content %}
 
   <div class="container">
@@ -42,7 +44,7 @@
             <td>{{ user.nom }}</td>
             <td>{{ user.sigle_service }}</td>
             <td>{{ user.nom_abrege }}</td>
-            <td>{% if user.role_id == 1 %}Agent {% elif user.role_id == 2 %} Chef de Service {% elif user.role_id == 3 %} Chef de département {% else %} Qualité Service{% endif %}</td>
+            <td>{% if user.role_id == 1 %}Agent {% elif user.role_id == 2 %} Chef de Service {% elif user.role_id == 3 %}  {% else %} Qualité Service{% endif %}</td>
             <td>{% if user.service_id == 1 %}ISGTR {% elif user.service_id == 2 %} ISCL {% elif user.service_id == 3 %} CDS {% elif user.service_id == 4 %}ISCC {% elif user.service_id == 5 %}ISREC {% elif user.service_id == 6 %}ISFAC {% elif user.service_id == 7 %}ISGRC  {% else %} ISDC{% endif %}</td>
             <td>{{ user.matricule }}</td>
             <td>{{ user.state }}</td>
@@ -55,7 +57,7 @@
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Restaurer User">
 
                   <button type="button" class="btn btn-secondary btn-sm">
-                    <i class="material-symbols-outlined">restore_from_trash</i>
+                    <i class="material-symbols-outlined">restaurer</i>
                   </button>
               </a>
               <!--  -->
@@ -79,4 +81,4 @@
 
 </body>
 
-</html>
+</html>Chef de département

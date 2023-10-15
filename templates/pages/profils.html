@@ -11,7 +11,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="../static/assets/img/favicon.png">
 
-    <title>DashForge Responsive Bootstrap 5 Dashboard Template</title>
+    <title>Profil Utilisateur</title>
 
     <!-- vendor css -->
     <link href="../static/lib/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
@@ -61,11 +61,11 @@
                   <div class="card bg-gray-100">
                     <div class="card-body tx-13">
                       <h5><a href="">{{ role.role }}</a></h5>
-                      <p class="mg-b-0">Mar 22 - Mar 24, World Trade Center </p>
+                      <p class="mg-b-0">{{ role.description }}</p>
                       <span class="tx-12 tx-color-03">Manila, Philippines</span>
                     </div><!-- card-body -->  
                     <div class="card-footer tx-13">
-                      {% if current_user.role.role == "Chef de département" or current_user.role.role == "Chef de Service" or current_user.role.role == "Agent" or current_user.role.role == "Support Qualité" %}
+                      {% if current_user.role.role == "Chef de département" or current_user.role.role == "Chef de Service" or current_user.role.role == "Agent" or current_user.role.role == "Collaborateur" %}
                       <a href="{{ url_for('gestion_profils',id=role.id)}}">
                         <button class="btn btn-xs btn-secondary"><i data-feather="align-justify"></i> Détails</button>
                       </a>
